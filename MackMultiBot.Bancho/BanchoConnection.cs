@@ -54,7 +54,7 @@ namespace MackMultiBot.Bancho
             // Make sure we're disconnected before reconnecting
             await DisconnectAsync();
 
-            BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials("[_Mack_]", "d7195ae5"), LogLevel.None, false));
+			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.Username, _banchoConfiguration.Password), LogLevel.None, false));
 
             BanchoClient.OnAuthenticated += BanchoOnAuthenticated;
 

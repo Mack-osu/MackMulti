@@ -1,8 +1,8 @@
 ﻿using MackMultiBot;
 using MackMultiBot.Bancho.Data;
 
-var logger = NLog.LogManager.GetLogger("Logger");
-logger.Info("App Started");
+var logger = NLog.LogManager.GetLogger("ProgramLogger");
+logger.Info("Program: Program Started");
 
 Bot Bot = new(new BanchoClientConfiguration());
 await Bot.StartAsync();

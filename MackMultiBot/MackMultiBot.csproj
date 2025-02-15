@@ -14,6 +14,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MackMultiBot.Bancho\MackMultiBot.Bancho.csproj" />
+    <ProjectReference Include="..\MackMultiBot.Database\MackMultiBot.Database.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BanchoSharp">
+      <HintPath>..\..\..\BanchoSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
