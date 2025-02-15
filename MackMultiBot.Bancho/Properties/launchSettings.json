@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "MackMultiBot.Bancho": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IRCUSER": "[_Mack_]",
+        "IRCPASS": "d7195ae5"
+      }
+    }
+  }
+}
