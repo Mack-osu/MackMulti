@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MackMultiBot.Database.Migrations
 {
     [DbContext(typeof(BotDatabaseContext))]
-    [Migration("20250215162821_InitialCreate")]
+    [Migration("20250216002350_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -68,6 +68,27 @@ namespace MackMultiBot.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LobbyInstances");
+                });
+
+            modelBuilder.Entity("MackMultiBot.Database.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AutoSkip")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

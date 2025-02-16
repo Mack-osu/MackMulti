@@ -42,6 +42,21 @@ namespace MackMultiBot.Database.Migrations
                 {
                     table.PrimaryKey("PK_LobbyInstances", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    IsAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
+                    AutoSkip = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
@@ -52,6 +67,9 @@ namespace MackMultiBot.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "LobbyInstances");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

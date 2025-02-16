@@ -17,6 +17,8 @@ namespace MackMultiBot
 
 		public BanchoConnection BanchoConnection { get; } = new(clientConfiguration);
 
+		public CommandProcessor CommandProcessor { get; private set; }
+
 		public Action<IChatChannel> OnBanchoChannelJoined;
 		public Action<string> OnBanchoChannelJoinFailed;
 		public Action<IMultiplayerLobby> OnBanchoLobbyCreated;
@@ -83,6 +85,9 @@ namespace MackMultiBot
                     await Task.Delay(500);
                 }
             }
+
+			CommandProcessor = new(this);
+			CommandProcessor.Start();
 		}
 	}
 }

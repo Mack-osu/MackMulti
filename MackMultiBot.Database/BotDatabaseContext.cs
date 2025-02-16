@@ -9,6 +9,7 @@ namespace MackMultiBot.Database
 
 		public DbSet<LobbyInstance> LobbyInstances => Set<LobbyInstance>();
 		public DbSet<LobbyConfiguration> LobbyConfigurations => Set<LobbyConfiguration>();
+		public DbSet<User> Users => Set<User>();
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
