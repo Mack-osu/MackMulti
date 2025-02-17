@@ -22,6 +22,7 @@ namespace MackMultiBot
 		public BanchoConnection BanchoConnection { get; init; }
 
 		public MultiplayerLobby? MultiplayerLobby { get; private set; } = null;
+		public BehaviorEventProcessor BehaviorEventProcessor { get; private set; }
 
 		public int LobbyConfigurationId { get; set; }
 
@@ -156,6 +157,12 @@ namespace MackMultiBot
 			var lobbyConfiguration = GetLobbyConfiguration();
 
 			// Initialize behaviors
+			BehaviorEventProcessor = new(this);
+
+			BehaviorEventProcessor.RegisterBehavior("TestBehavior");
+			BehaviorEventProcessor.RegisterBehavior("HostQueueBehavior");
+
+			BehaviorEventProcessor.Start();
 
 			// Ensure database entry
 			var recentRoomInstance = await GetRecentRoomInstance();
@@ -171,6 +178,8 @@ namespace MackMultiBot
 
 				await context.SaveChangesAsync();
 			}
+
+			// Pehaps call some initialization event in the command processor
 
 			BanchoConnection.MessageHandler.SendMessage(_channelId, "!mp password " + lobbyConfiguration.Result.Password);
 			_logger.Trace("Lobby: Lobby instance built successfully");

@@ -19,65 +19,10 @@ namespace MackMultiBot
 		readonly Dictionary<string, MethodInfo> _commandMethods = new();
 		List<ICommand> _commands = [];
 
-		public void RegisterHandlers()
-		{
-			_logger.Trace("CommandProcessor: Registering handlers...");
-			var handlerTypes = AppDomain.CurrentDomain.GetAssemblies()
-			.SelectMany(s => s.GetTypes())
-			.Where(p => typeof(IHandler).IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
-
-			foreach (var type in handlerTypes)
-			{
-				_logger.Info("CommandProcessor: Creating Handler of type {handler}", type.Name);
-				RegisterCommandMethod((IHandler)Activator.CreateInstance(type));
-			}
-		}
-
-		private void RegisterCommandMethod(IHandler handler)
-		{
-			_logger.Trace("CommandProcessor: Registering methods...");
-			var methods = handler.GetType().GetMethods();
-			foreach (var method in methods)
-			{
-				var attribute = method.GetCustomAttribute<CommandAttribute>();
-				if (attribute != null)
-				{
-					_logger.Info("CommandProcessor: Registering Command Method: {method}", method.Name);
-					_commandMethods[attribute.Command] = method;
-				}
-			}
-		}
-
-		void RegisterCommands()
-		{
-			_logger.Trace("CommandProcessor: Registering commands...");
-
-			var commands = AppDomain.CurrentDomain
-				.GetAssemblies()
-				.SelectMany(x => x.GetTypes())
-				.Where(y => typeof(ICommand).IsAssignableFrom(y) && y.IsClass)
-				.ToList();
-
-			foreach (var commandType in commands)
-			{
-				var command = Activator.CreateInstance(commandType);
-
-				if (command == null)
-				{
-					Console.WriteLine($"CommandProcessor: Failed to create instance of command {commandType}");
-					continue;
-				}
-
-				Console.WriteLine($"CommandProcessor: Registered command {commandType}");
-
-				_commands.Add((ICommand)command);
-			}
-		}
-
 		public void Start()
 		{
-			RegisterHandlers();
 			RegisterCommands();
+
 			bot.BanchoConnection.MessageHandler.OnMessageReceived += OnMessageReceived;
 		}
 
@@ -86,6 +31,32 @@ namespace MackMultiBot
 			bot.BanchoConnection.MessageHandler.OnMessageReceived -= OnMessageReceived;
 			_commandMethods.Clear();
 			_commands.Clear();
+		}
+
+		private void RegisterCommands()
+		{
+			_logger.Trace("CommandProcessor: Registering commands...");
+
+			var commands = AppDomain.CurrentDomain
+				.GetAssemblies()
+				.SelectMany(s => s.GetTypes())
+				.Where(p => typeof(ICommand).IsAssignableFrom(p) && p.IsClass)
+				.ToList();
+
+			foreach (var commandType in commands)
+			{
+				var command = Activator.CreateInstance(commandType);
+
+				if (command == null)
+				{
+					_logger.Warn("CommandProcessor: Failed to create instance of command {CommandType}", commandType);
+					continue;
+				}
+
+				_logger.Trace("CommandProcessor: Registered command {CommandType}", commandType);
+
+				_commands.Add((ICommand)command);
+			}
 		}
 
 		async void OnMessageReceived(IPrivateIrcMessage message)
@@ -128,21 +99,49 @@ namespace MackMultiBot
 				return;
 			}
 
-			ExecuteCommand(command.Command.ToLower(), args);
+			var commandContext = new CommandContext(message, args.Skip(1).ToArray(), bot, command, user);
+
+			// Execute the command in the context of a multiplayer lobby
+			foreach (var lobby in bot.Lobbies)
+			{
+				if (lobby.MultiplayerLobby == null || lobby.MultiplayerLobby.ChannelName != message.Recipient || lobby.BehaviorEventProcessor == null)
+					continue;
+
+				commandContext.Lobby = lobby;
+				commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
+
+				// If the player is in the lobby, retrieve the user from the database with that name instead
+				// because the IRC username may change spaces to underscores and crap, and I don't think
+				// there's a good way to handle that, since what if the name actually contains an "_"?
+				if (commandContext.Player?.Name != null)
+				{
+					commandContext.User = await userDb.FindOrCreateUser(commandContext.Player!.Name);
+				}
+
+				try
+				{
+					await lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
+
+				}
+				catch (Exception e)
+				{
+					_logger.Error(e, "CommandProcessor: Error executing command {Command} in lobby {Lobby}", command.Command, lobby.MultiplayerLobby.ChannelName);
+				}
+			}
 
 			//command?.Execute(new CommandContext(message, args, bot, command, user));
 		}
 
-		public void ExecuteCommand(string command, string[] args)
-		{
-			if (_commandMethods.TryGetValue(command, out var method))
-			{
-				method.Invoke(null, [args]);
-			}
-			else
-			{
-				Console.WriteLine("CommandProcessor: Command {command} not found.", command);
-			}
-		}
+		//public void ExecuteCommand(string command, string[] args)
+		//{
+		//	if (_commandMethods.TryGetValue(command, out var method))
+		//	{
+		//		method.Invoke(null, [args]);
+		//	}
+		//	else
+		//	{
+		//		Console.WriteLine("CommandProcessor: Command {command} not found.", command);
+		//	}
+		//}
 	}
 }

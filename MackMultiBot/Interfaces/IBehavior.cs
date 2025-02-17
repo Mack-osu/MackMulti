@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MackMultiBot.Interfaces
 {
-	public interface IHandler
+	public interface IBehavior
 	{
 	}
 }

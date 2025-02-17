@@ -15,6 +15,7 @@ namespace MackMultiBot.Interfaces
 		public BanchoConnection BanchoConnection { get; }
 		public MultiplayerLobby? MultiplayerLobby { get; }
 		public int LobbyConfigurationId { get; set; }
+		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
 
 		public Task ConnectOrCreateAsync();
 

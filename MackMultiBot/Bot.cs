@@ -66,24 +66,6 @@ namespace MackMultiBot
                 _logger.Info("Bot: Starting lobby with id {LobbyConfigurationId}...", lobby.LobbyConfigurationId);
                 
                 await lobby.ConnectOrCreateAsync();
-                
-                var attempts = 0;
-                while (true)
-                {
-                    if (attempts++ > 20)
-                    {
-                        _logger.Error("Bot: Lobby with id {LobbyIndex} did not become ready after 10 seconds.", lobby.LobbyConfigurationId);
-                        break;
-                    }
-
-                    // If something went wrong with the connection, we should stop trying.
-                    if (BanchoConnection.ConnectionCancellationToken?.IsCancellationRequested == true)
-                    {
-                        break;
-                    }
-                    
-                    await Task.Delay(500);
-                }
             }
 
 			CommandProcessor = new(this);

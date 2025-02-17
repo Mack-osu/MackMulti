@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MackMultiBot.Database
+public static class StringExtensions
 {
-	public static class StringExtensions
+	public static string ToIrcNameFormat(this string str)
 	{
-		public static string ToIrcNameFormat(this string str)
-		{
-			return str.Replace(' ', '_');
-		}
+		return str.Replace(' ', '_');
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using BanchoSharp.Interfaces;
+using BanchoSharp.Multiplayer;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using System;
@@ -13,9 +14,11 @@ namespace MackMultiBot
 	{
 		public IPrivateIrcMessage Message { get; private set; } = message;
 		public string[] Args { get; private set; } = args;
+		public ILobby? Lobby { get; set; }
 		public Bot Bot { get; private set; } = bot;
-		public User User { get; private set; } = user;
+		public User User { get; set; } = user;
 		public ICommand Command { get; private set; } = command;
+		public MultiplayerPlayer? Player { get; set; }
 
 		public void Reply(string message)
 		{
