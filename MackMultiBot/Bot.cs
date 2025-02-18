@@ -57,6 +57,12 @@ namespace MackMultiBot
 
 		private async void OnBanchoReady()
 		{
+			if (BanchoConnection.BanchoClient == null)
+			{
+				_logger.Error("Bot: BanchoClient null when ready? how+????");
+				return;
+			}
+
 			BanchoConnection.BanchoClient.OnChannelJoined += OnBanchoChannelJoined;
 			BanchoConnection.BanchoClient.OnChannelJoinFailure += OnBanchoChannelJoinFailed;
 			BanchoConnection.BanchoClient.BanchoBotEvents.OnTournamentLobbyCreated += OnBanchoLobbyCreated;

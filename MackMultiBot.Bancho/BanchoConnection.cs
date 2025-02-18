@@ -52,7 +52,8 @@ namespace MackMultiBot.Bancho
             _cancellationTokenSource = new CancellationTokenSource();
 
             // Make sure we're disconnected before reconnecting
-            await DisconnectAsync();
+            if (IsConnected)
+                await DisconnectAsync();
 
 			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.Username, _banchoConfiguration.Password), LogLevel.None, false));
 

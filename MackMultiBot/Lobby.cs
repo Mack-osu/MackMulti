@@ -54,7 +54,7 @@ namespace MackMultiBot
 			if (MultiplayerLobby != null)
 			{
 				_logger.Trace("Lobby: Lobby instance already exists, parting from previous instance...");
-				await BanchoConnection.BanchoClient!.SendAsync($"PART {MultiplayerLobby?.ChannelName}");
+				await BanchoConnection.BanchoClient!.PartChannelAsync(MultiplayerLobby.ChannelName); 
 			}
 
 			var lobbyConfiguration = await GetLobbyConfiguration();
@@ -72,7 +72,9 @@ namespace MackMultiBot
 			{
 				_logger.Trace("Lobby: Attempting to join existing channel '{ExistingChannel}' for lobby '{LobbyName}'...", existingChannel, lobbyConfiguration.Name);
 
-				await BanchoConnection.BanchoClient?.SendAsync($"JOIN {existingChannel}")!;
+				await BanchoConnection.BanchoClient.JoinChannelAsync(existingChannel);
+
+				Console.WriteLine(BanchoConnection.BanchoClient.Channels.Count);
 			}
 			else
 			{
@@ -111,9 +113,13 @@ namespace MackMultiBot
 				return;
 			}
 
+			_logger.Trace("Lobby: here1", channel.ChannelName);
+
 			// Not the channel we were trying to join, ignore
 			if (channel.ChannelName != _channelId)
 				return;
+
+			_logger.Trace("Lobby: here2", channel.ChannelName);
 
 			// We will be waiting for the lobby creation event instead
 			if (_isCreatingInstance)
@@ -211,9 +217,7 @@ namespace MackMultiBot
 				.Where(x => x.LobbyConfigurationId == LobbyConfigurationId);
 
 			if (channelId != null)
-			{
 				query = query.Where(x => x.Channel == channelId);
-			}
 
 			return await query.FirstOrDefaultAsync();
 		}
