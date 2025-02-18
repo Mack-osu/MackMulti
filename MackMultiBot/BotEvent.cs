@@ -16,6 +16,7 @@ namespace MackMultiBot
 	public enum BotEventType
 	{
 		// Bot Events
+		Initialize,
 		Command,
 		BehaviorEvent,
 

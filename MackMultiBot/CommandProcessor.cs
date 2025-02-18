@@ -128,20 +128,6 @@ namespace MackMultiBot
 					_logger.Error(e, "CommandProcessor: Error executing command {Command} in lobby {Lobby}", command.Command, lobby.MultiplayerLobby.ChannelName);
 				}
 			}
-
-			//command?.Execute(new CommandContext(message, args, bot, command, user));
 		}
-
-		//public void ExecuteCommand(string command, string[] args)
-		//{
-		//	if (_commandMethods.TryGetValue(command, out var method))
-		//	{
-		//		method.Invoke(null, [args]);
-		//	}
-		//	else
-		//	{
-		//		Console.WriteLine("CommandProcessor: Command {command} not found.", command);
-		//	}
-		//}
 	}
 }

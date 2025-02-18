@@ -179,9 +179,11 @@ namespace MackMultiBot
 				await context.SaveChangesAsync();
 			}
 
-			// Pehaps call some initialization event in the command processor
+			await BehaviorEventProcessor.OnInitializeEvent();
 
-			BanchoConnection.MessageHandler.SendMessage(_channelId, "!mp password " + lobbyConfiguration.Result.Password);
+			// Temporary thing, will make lobby configs somewhere else in the future.
+			BanchoConnection.MessageHandler.SendMessage(_channelId, "!mp password " + lobbyConfiguration.Result.Password); 
+
 			_logger.Trace("Lobby: Lobby instance built successfully");
 		}
 

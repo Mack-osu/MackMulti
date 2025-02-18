@@ -16,6 +16,28 @@ namespace MackMultiBot.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
+            modelBuilder.Entity("MackMultiBot.Database.Entities.LobbyBehaviorData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BehaviorName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LobbyConfigurationId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LobbyBehaviorData");
+                });
+
             modelBuilder.Entity("MackMultiBot.Database.Entities.LobbyConfiguration", b =>
                 {
                     b.Property<int>("Id")

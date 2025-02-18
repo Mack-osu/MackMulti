@@ -11,6 +11,21 @@ namespace MackMultiBot.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "LobbyBehaviorData",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    LobbyConfigurationId = table.Column<int>(type: "INTEGER", nullable: false),
+                    BehaviorName = table.Column<string>(type: "TEXT", nullable: false),
+                    Data = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LobbyBehaviorData", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LobbyConfigurations",
                 columns: table => new
                 {
@@ -62,6 +77,9 @@ namespace MackMultiBot.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "LobbyBehaviorData");
+
             migrationBuilder.DropTable(
                 name: "LobbyConfigurations");
 

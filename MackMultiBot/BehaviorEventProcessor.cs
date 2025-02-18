@@ -146,6 +146,11 @@ namespace MackMultiBot
 			await ExecuteBotCallbackWithArgument(BotEventType.Command, command, commandContext);
 		}
 
+		public async Task OnInitializeEvent()
+		{
+			await ExecuteBotCallback(BotEventType.Initialize);
+		}
+
 		async Task ExecuteBotCallback(BotEventType botEventType, object? param = null)
 		{
 			var events = _events.Where(x => x.BotEventType == botEventType);
@@ -196,6 +201,10 @@ namespace MackMultiBot
 							// If we have a return value, it's a task, so await it
 							if (methodTask != null)
 								await (Task)methodTask;
+
+							// If the behavior class implements IBehaviorDataConsumer, save the data
+							if (instance is IBehaviorDataConsumer dataBehavior)
+								await dataBehavior.SaveData();
 						});
 
 						await Task.WhenAny(executeEventTask, Task.Delay(TimeSpan.FromSeconds(15)));
