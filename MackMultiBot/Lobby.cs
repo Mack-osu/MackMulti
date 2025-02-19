@@ -113,13 +113,9 @@ namespace MackMultiBot
 				return;
 			}
 
-			_logger.Trace("Lobby: here1", channel.ChannelName);
-
 			// Not the channel we were trying to join, ignore
 			if (channel.ChannelName != _channelId)
 				return;
-
-			_logger.Trace("Lobby: here2", channel.ChannelName);
 
 			// We will be waiting for the lobby creation event instead
 			if (_isCreatingInstance)

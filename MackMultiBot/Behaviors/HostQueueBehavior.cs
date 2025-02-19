@@ -48,10 +48,17 @@ namespace MackMultiBot.Behaviors
 			await userDb.SaveAsync();
 		}
 
+		[BotEvent(BotEventType.Command, "skip")]
 		public async Task OnSkipCommand(CommandContext commandContext)
 		{
-			if (Data.Queue[0] == commandContext.Player.Name)
-				SkipHost();
+			if (Data.Queue[0] == commandContext.Player?.Name)
+				await SkipHost();
+		}
+
+		[BotEvent(BotEventType.Command, "queue")]
+		public async Task OnDisplayQueueCommand(CommandContext commandContext)
+		{
+			commandContext.Reply(await GetQueueMessage());
 		}
 
 		#endregion
@@ -147,8 +154,7 @@ namespace MackMultiBot.Behaviors
 		async Task<string> GetQueueMessage()
 		{
 			_logger.Trace("HostQueueBehavior: Getting Queue Message");
-			await Task.Delay(1);
-			return "QueueMessage";
+			return $"Queue: {string.Join(',', Data.Queue)}";
 		}
 
 		#endregion
