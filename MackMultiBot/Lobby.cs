@@ -72,9 +72,11 @@ namespace MackMultiBot
 			{
 				_logger.Trace("Lobby: Attempting to join existing channel '{ExistingChannel}' for lobby '{LobbyName}'...", existingChannel, lobbyConfiguration.Name);
 
+				//await BanchoConnection.BanchoClient.PartChannelAsync(existingChannel);
+				//await Task.Delay(10000);
 				await BanchoConnection.BanchoClient.JoinChannelAsync(existingChannel);
 
-				Console.WriteLine(BanchoConnection.BanchoClient.Channels.Count);
+				Console.WriteLine(existingChannel);
 			}
 			else
 			{
