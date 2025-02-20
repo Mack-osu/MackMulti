@@ -61,6 +61,28 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply(await GetQueueMessage());
 		}
 
+		[BotEvent(BotEventType.Command, "sethost")]
+		public async Task OnSetHostCommand(CommandContext commandContext)
+		{
+			string? user = Data.Queue.FirstOrDefault(x => x.ToIrcNameFormat() == commandContext.Args[0].ToIrcNameFormat());
+
+			if (user == null)
+			{
+				commandContext.Reply($"Player '{commandContext.Args[0]}' could not be found.");
+				return;
+			}
+
+			Data.Queue.Remove(user);
+			Data.Queue.Insert(0, user);
+			EnsureHost();
+		}
+
+		[BotEvent(BotEventType.Command, "forceskip")]
+		public async Task OnForceSkipCommand(CommandContext commandContext)
+		{
+			await SkipHost();
+		}
+
 		#endregion
 
 		#region Bot Events
@@ -85,6 +107,19 @@ namespace MackMultiBot.Behaviors
 
 			if (Data.Queue.Count == 1)
 				EnsureHost();
+		}
+
+		[BotEvent(BotEventType.PlayerDisconnected)]
+		public Task OnPlayerDisconnected(MultiplayerPlayer player)
+		{
+			_logger.Trace("HostQueueBehavior: Player disconnected {player}", player.Name);
+
+			Data.Queue.Remove(player.Name);
+
+			if (Data.Queue.Count > 0)
+				EnsureHost();
+
+			return Task.CompletedTask;
 		}
 
 		[BotEvent(BotEventType.MatchFinished)]
@@ -154,7 +189,27 @@ namespace MackMultiBot.Behaviors
 		async Task<string> GetQueueMessage()
 		{
 			_logger.Trace("HostQueueBehavior: Getting Queue Message");
-			return $"Queue: {string.Join(',', Data.Queue)}";
+
+			await using var userDb = new UserDb();
+
+			List<string> names = [];
+
+			for (int i = 0; i < Data.Queue.Count; i++)
+			{
+				string player = Data.Queue[i];
+
+				var user = await userDb.FindOrCreateUser(player);
+
+				// Add zero width space to all except host to avoid mentioning them.
+				var finalName = i != 0 ? $"{player[0]}\u200B{player[1..]}" : player;
+
+				if (user.AutoSkip)
+					finalName += "*";
+
+				names.Add(finalName);
+			}
+
+			return $"Queue: {string.Join(", ", names)}";
 		}
 
 		#endregion

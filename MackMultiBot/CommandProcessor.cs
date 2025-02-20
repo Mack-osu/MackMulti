@@ -61,7 +61,7 @@ namespace MackMultiBot
 
 		async void OnMessageReceived(IPrivateIrcMessage message)
 		{
-			if (message.IsBanchoBotMessage || !message.Content.StartsWith("!") || message.Content.StartsWith("!mp"))
+			if (message.IsBanchoBotMessage || !message.Content.StartsWith("!") || message.Content.StartsWith("!mp") || message.Content.StartsWith("!roll"))
 				return;
 
 			string[] args = message.Content.Split(' ');
