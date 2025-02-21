@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 
 namespace MackMultiBot.Commands
 {
-	public class SetHostCommand : ICommand
+	public class StartCommand : ICommand
 	{
-		public string Command => "sethost";
+		public string Command => "start";
 
-		public string[]? Aliases => ["sh"];
+		public string[]? Aliases => [];
 
-		public int MinimumArguments => 1;
+		public int MinimumArguments => 0;
 
 		public bool IsGlobal => false;
 
-		public bool AdminCommand => true;
+		public bool AdminCommand => false;
 
-		public string Usage => "!sethost <name_of_user>";
+		public string Usage => "!start <seconds>";
 
 		public Task Execute(CommandContext ctx) => Task.CompletedTask;
 	}

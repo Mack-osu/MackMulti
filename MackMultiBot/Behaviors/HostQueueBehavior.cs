@@ -1,7 +1,9 @@
 ﻿using BanchoSharp.Multiplayer;
 using MackMulti.Database.Databases;
 using MackMultiBot.Behaviors.Data;
+using MackMultiBot.Database;
 using MackMultiBot.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,19 +64,20 @@ namespace MackMultiBot.Behaviors
 		}
 
 		[BotEvent(BotEventType.Command, "sethost")]
-		public async Task OnSetHostCommand(CommandContext commandContext)
+		public Task OnSetHostCommand(CommandContext commandContext)
 		{
 			string? user = Data.Queue.FirstOrDefault(x => x.ToIrcNameFormat() == commandContext.Args[0].ToIrcNameFormat());
 
 			if (user == null)
 			{
 				commandContext.Reply($"Player '{commandContext.Args[0]}' could not be found.");
-				return;
+				return Task.CompletedTask;
 			}
 
 			Data.Queue.Remove(user);
 			Data.Queue.Insert(0, user);
 			EnsureHost();
+			return Task.CompletedTask;
 		}
 
 		[BotEvent(BotEventType.Command, "forceskip")]
@@ -100,6 +103,18 @@ namespace MackMultiBot.Behaviors
 			_logger.Trace("HostQueueBehavior: Player Joined {player}", player.Name);
 
 			await using var userDb = new UserDb();
+
+			// Temporary yucky, just want it here during testing
+			await using var dbContext = new BotDatabaseContext();
+			string formattedUsername = player.Name.ToIrcNameFormat();
+			if (dbContext.Users
+				.AsEnumerable() // Pulls data into memory
+				.FirstOrDefault(x => x.Name.ToIrcNameFormat() == formattedUsername) == null)
+			{
+				Console.WriteLine("New player \n\n");
+				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "Welcome to the lobby!");
+				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "This bot currently is under active development and may not have all the features you'd expect, if you encounter any issues, please let me know!");
+			}
 
 			var user = await userDb.FindOrCreateUser(player.Name);
 

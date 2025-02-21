@@ -121,7 +121,6 @@ namespace MackMultiBot
 				try
 				{
 					await lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
-
 				}
 				catch (Exception e)
 				{

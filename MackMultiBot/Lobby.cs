@@ -1,6 +1,7 @@
 ﻿using BanchoSharp.Interfaces;
 using BanchoSharp.Multiplayer;
 using MackMultiBot.Bancho;
+using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
@@ -26,10 +27,9 @@ namespace MackMultiBot
 
 		public int LobbyConfigurationId { get; set; }
 
-
 		private string _channelId = string.Empty;
 
-		private bool _isCreatingInstance;
+		private bool _shouldCreateNewInstance;
 
 		public Lobby(Bot bot, int lobbyConfigurationId)
 		{
@@ -66,14 +66,12 @@ namespace MackMultiBot
 				existingChannel = previousInstance.Channel;
 
 			_channelId = existingChannel;
-			_isCreatingInstance = existingChannel.Length == 0;
+			_shouldCreateNewInstance = existingChannel.Length == 0;
 
-			if (!_isCreatingInstance)
+			if (!_shouldCreateNewInstance)
 			{
 				_logger.Trace("Lobby: Attempting to join existing channel '{ExistingChannel}' for lobby '{LobbyName}'...", existingChannel, lobbyConfiguration.Name);
 
-				//await BanchoConnection.BanchoClient.PartChannelAsync(existingChannel);
-				//await Task.Delay(10000);
 				await BanchoConnection.BanchoClient.JoinChannelAsync(existingChannel);
 
 				Console.WriteLine(existingChannel);
@@ -96,13 +94,17 @@ namespace MackMultiBot
 				return;
 			}
 
-			if (!_isCreatingInstance)
+			if (!_shouldCreateNewInstance)
 				return;
 
 			_channelId = lobby.ChannelName;
-			_isCreatingInstance = false;
+			_shouldCreateNewInstance = false;
 
 			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(lobby.ChannelName[4..]), lobby.ChannelName);
+
+			var managerDataProvider = new BehaviorDataProvider<LobbyManagerBehaviorData>(this);
+			managerDataProvider.Data.IsFreshInstance = true;
+			await managerDataProvider.SaveData();
 
 			await ConstructInstance();
 		}
@@ -120,12 +122,15 @@ namespace MackMultiBot
 				return;
 
 			// We will be waiting for the lobby creation event instead
-			if (_isCreatingInstance)
+			if (_shouldCreateNewInstance)
 				return;
 
 			_logger.Trace("Lobby: Joined channel {Channel} successfully, building lobby instance...", channel.ChannelName);
 
-			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(channel.ChannelName[4..]), channel.ChannelName);
+			var lobbyConfiguration = await GetLobbyConfiguration();
+
+			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(channel.ChannelName[4..]), lobbyConfiguration.Name);
+			await MultiplayerLobby.RefreshSettingsAsync();
 
 			await ConstructInstance();
 		}
@@ -149,7 +154,7 @@ namespace MackMultiBot
 
 			_logger.Warn("Lobby: Failed to join channel {attemptedChannel}, creating new isntance", attemptedChannel);
 
-			_isCreatingInstance = true;
+			_shouldCreateNewInstance = true;
 
 			await BanchoConnection.BanchoClient?.MakeTournamentLobbyAsync(lobbyConfiguration.Name);
 		}
@@ -165,6 +170,8 @@ namespace MackMultiBot
 
 			BehaviorEventProcessor.RegisterBehavior("TestBehavior");
 			BehaviorEventProcessor.RegisterBehavior("HostQueueBehavior");
+			BehaviorEventProcessor.RegisterBehavior("LobbyManagerBehavior");
+			BehaviorEventProcessor.RegisterBehavior("StartBehavior");
 
 			BehaviorEventProcessor.Start();
 
@@ -184,9 +191,6 @@ namespace MackMultiBot
 			}
 
 			await BehaviorEventProcessor.OnInitializeEvent();
-
-			// Temporary thing, will make lobby configs somewhere else in the future.
-			BanchoConnection.MessageHandler.SendMessage(_channelId, "!mp password " + lobbyConfiguration.Result.Password); 
 
 			_logger.Trace("Lobby: Lobby instance built successfully");
 		}

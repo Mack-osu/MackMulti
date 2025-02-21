@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MackMultiBot.Database.Migrations
 {
     [DbContext(typeof(BotDatabaseContext))]
-    [Migration("20250218190531_InitialCreate")]
+    [Migration("20250221170012_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
