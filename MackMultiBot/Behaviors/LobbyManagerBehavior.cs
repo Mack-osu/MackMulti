@@ -2,6 +2,7 @@
 using MackMulti.Database.Databases;
 using MackMultiBot.Bancho;
 using MackMultiBot.Behaviors.Data;
+using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using System;
@@ -50,6 +51,19 @@ namespace MackMultiBot.Behaviors
 			};
 
 			await Task.WhenAll(tasks);
+		}
+
+		[BotEvent(BotEventType.Command, "close")]
+		public async Task CloseLobby(CommandContext commandContext)
+		{
+			// Remove instance from lobby database
+			await using var databaseCtx = new BotDatabaseContext();
+			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+
+			await databaseCtx.SaveChangesAsync();
+
+			commandContext.Reply("!mp close");
 		}
 
 		private async Task EnsureRoomName(LobbyConfiguration configuration)

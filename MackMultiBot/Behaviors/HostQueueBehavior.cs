@@ -1,4 +1,5 @@
-﻿using BanchoSharp.Multiplayer;
+﻿using BanchoSharp.Interfaces;
+using BanchoSharp.Multiplayer;
 using MackMulti.Database.Databases;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
@@ -97,6 +98,12 @@ namespace MackMultiBot.Behaviors
 			Data.Queue = new();
 		}
 
+		[BotEvent(BotEventType.SettingsUpdated)] // Makes sure queue is valid after bot restart as players might have left during downtime
+		public async Task OnSettingsUpdated()
+		{
+			await EnsureQueueValidity();
+		}
+
 		[BotEvent(BotEventType.PlayerJoined)]
 		public async Task OnPlayerJoined(MultiplayerPlayer player)
 		{
@@ -113,14 +120,14 @@ namespace MackMultiBot.Behaviors
 			{
 				Console.WriteLine("New player \n\n");
 				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "Welcome to the lobby!");
-				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "This bot currently is under active development and may not have all the features you'd expect, if you encounter any issues, please let me know!");
+				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "This bot currently is under active development and may not have all the features you'd expect. if you encounter any issues or have any suggestions, please let me know!");
 			}
 
 			var user = await userDb.FindOrCreateUser(player.Name);
 
 			Data.Queue.Add(player.Name);
 
-			if (Data.Queue.Count == 1)
+			if (context.MultiplayerLobby.PlayerCount == 1)
 				EnsureHost();
 		}
 
@@ -144,6 +151,15 @@ namespace MackMultiBot.Behaviors
 
 			await SkipHost();
 			context.SendMessage(await GetQueueMessage());
+		}
+
+
+		[BotEvent(BotEventType.HostChanged)]
+		public Task OnHostChanged()
+		{
+			EnsureHost();
+
+			return Task.CompletedTask;
 		}
 
 		#endregion
@@ -225,6 +241,29 @@ namespace MackMultiBot.Behaviors
 			}
 
 			return $"Queue: {string.Join(", ", names)}";
+		}
+
+		async Task EnsureQueueValidity()
+		{
+			// Remove players no longer in lobby
+			foreach (var player in Data.Queue.ToList().Where(player => context.MultiplayerLobby.Players.All(x => x.Name.ToIrcNameFormat() != player.ToIrcNameFormat())))
+			{
+				Data.Queue.Remove(player);
+			}
+
+			// Add players in lobby who are not already in queue
+			foreach (var player in context.MultiplayerLobby.Players.Where(player => !Data.Queue.Any(x => x.ToIrcNameFormat() == player.Name.ToIrcNameFormat())))
+			{
+				var userDb = new UserDb();
+				var user = await userDb.FindOrCreateUser(player.Name);
+
+				Data.Queue.Add(player.Name);
+			}
+
+			// Remove duplicates, shouldn't be a problem in theory, but had it happen a couple times
+			Data.Queue = Data.Queue.Distinct().ToList();
+
+			EnsureHost();
 		}
 
 		#endregion
