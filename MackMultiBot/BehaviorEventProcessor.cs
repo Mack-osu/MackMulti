@@ -68,6 +68,7 @@ namespace MackMultiBot
 			lobby.MultiplayerLobby.OnHostChanged += OnHostChanged;
 			lobby.MultiplayerLobby.OnHostChangingMap += OnHostChangingMap;
 			lobby.MultiplayerLobby.OnAllPlayersReady += OnAllPlayersReady;
+			lobby.MultiplayerLobby.OnBeatmapChanged += OnBeatmapChanged;
 
 			lobby.BanchoConnection.MessageHandler.OnMessageReceived += OnMessageReceived;
 
@@ -120,6 +121,11 @@ namespace MackMultiBot
 		private async void OnAllPlayersReady()
 		{
 			await ExecuteBotCallback(BotEventType.AllPlayersReady);
+		}
+
+		private async void OnBeatmapChanged(BeatmapShell beatmapshell)
+		{
+			await ExecuteBotCallback(BotEventType.MapChanged, beatmapshell);
 		}
 
 		private async void OnMessageReceived(IPrivateIrcMessage msg)

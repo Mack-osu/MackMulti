@@ -1,5 +1,6 @@
 ﻿using BanchoSharp.Multiplayer;
 using MackMultiBot.Interfaces;
+using OsuSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,18 @@ namespace MackMultiBot
 			int? playerId = MultiplayerLobby.Players.FirstOrDefault(x => x.Name == playerName)?.Id;
 
 			return playerId == null ? playerName.ToIrcNameFormat() : $"#{playerId}";
+		}
+
+		public async Task<T> UsingApiClient<T>(Func<OsuApiClient, Task<T>> apiCall)
+		{
+			try
+			{
+				return await apiCall(Lobby.Bot.OsuApiClient);
+			}
+			catch (OsuApiException)
+			{
+				throw;
+			}
 		}
 	}
 }

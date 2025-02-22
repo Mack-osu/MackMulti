@@ -111,7 +111,7 @@ namespace MackMultiBot.Behaviors
 
 			await using var userDb = new UserDb();
 
-			// Temporary yucky, just want it here during testing
+			// Temporary and yucky, just want it here during testing
 			await using var dbContext = new BotDatabaseContext();
 			string formattedUsername = player.Name.ToIrcNameFormat();
 			if (dbContext.Users
@@ -140,6 +140,8 @@ namespace MackMultiBot.Behaviors
 
 			if (Data.Queue.Count > 0)
 				EnsureHost();
+			else // Clear host so the lobby doesn't believe the host is already set if a single player rejoins lobby.
+				context.SendMessage("!mp clearhost");
 
 			return Task.CompletedTask;
 		}
@@ -174,6 +176,7 @@ namespace MackMultiBot.Behaviors
 			_logger.Trace("HostQueueBehavior: Ensuring Queue");
 
 			// Host already set
+			_logger.Debug("HostQueueBehavior: {hostName}", context?.MultiplayerLobby?.Host?.Name);
 			if (context.MultiplayerLobby.Host != null && Data.Queue[0].ToIrcNameFormat() == context.MultiplayerLobby.Host.Name.ToIrcNameFormat())
 				return;
 

@@ -26,9 +26,9 @@ namespace MackMultiBot.Bancho
         public CancellationToken? ConnectionCancellationToken => _cancellationTokenSource?.Token;
 
         private CancellationTokenSource? _cancellationTokenSource;
-        private readonly BanchoClientConfiguration _banchoConfiguration;
+        private readonly BotConfiguration _banchoConfiguration;
 
-        public BanchoConnection(BanchoClientConfiguration banchoClientConfiguration)
+        public BanchoConnection(BotConfiguration banchoClientConfiguration)
         {
             _banchoConfiguration = banchoClientConfiguration;
 

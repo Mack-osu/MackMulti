@@ -172,6 +172,8 @@ namespace MackMultiBot
 			BehaviorEventProcessor.RegisterBehavior("HostQueueBehavior");
 			BehaviorEventProcessor.RegisterBehavior("LobbyManagerBehavior");
 			BehaviorEventProcessor.RegisterBehavior("StartBehavior");
+			BehaviorEventProcessor.RegisterBehavior("MapManagerBehavior");
+			BehaviorEventProcessor.RegisterBehavior("MiscellaneousCommandsBehavior");
 
 			BehaviorEventProcessor.Start();
 

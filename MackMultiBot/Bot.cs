@@ -6,16 +6,18 @@ using MackMultiBot.Bancho.Interfaces;
 using MackMultiBot.Database;
 using MackMultiBot.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using OsuSharp;
 
 namespace MackMultiBot
 {
-	public class Bot(BanchoClientConfiguration clientConfiguration)
+	public class Bot(BotConfiguration botConfiguration)
 	{
 		NLog.Logger _logger = NLog.LogManager.GetLogger("BotLogger");
 
 		public List<ILobby> Lobbies { get; } = [];
 
-		public BanchoConnection BanchoConnection { get; } = new(clientConfiguration);
+		public BanchoConnection BanchoConnection { get; } = new(botConfiguration);
+		public OsuApiClient OsuApiClient { get; } = new(botConfiguration.OsuApiClientId, botConfiguration.OsuApiClientSecret);
 
 		public CommandProcessor CommandProcessor { get; private set; }
 

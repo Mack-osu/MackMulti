@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MackMultiBot.Bancho.Data
 {
-	public class BanchoClientConfiguration
+	public class BotConfiguration
 	{
 		/// <summary>
 		/// osu! IRC username, obtained from https://osu.ppy.sh/home/account/edit#legacy-api
@@ -18,5 +18,9 @@ namespace MackMultiBot.Bancho.Data
         /// osu! IRC password, obtained from https://osu.ppy.sh/home/account/edit#legacy-api
         /// </summary>
         public string Password { get; init; } = Environment.GetEnvironmentVariable("IRCPASS");
+
+		//http://localhost:4000
+		public string OsuApiClientId { get; init; } = Environment.GetEnvironmentVariable("APIID");
+		public string OsuApiClientSecret { get; init; } = Environment.GetEnvironmentVariable("APISECRET");
 	}
 }
