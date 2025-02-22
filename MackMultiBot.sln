@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MackMultiBot", "MackMultiBo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MackMultiBot.Database", "MackMultiBot.Database\MackMultiBot.Database.csproj", "{7EB91F62-E62D-46DB-A9C8-557ADF12460B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MackMultiBot.OsuData", "MackMultiBot.OsuData\MackMultiBot.OsuData.csproj", "{B6279074-477A-43F6-B04A-9F6582253631}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7EB91F62-E62D-46DB-A9C8-557ADF12460B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EB91F62-E62D-46DB-A9C8-557ADF12460B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EB91F62-E62D-46DB-A9C8-557ADF12460B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6279074-477A-43F6-B04A-9F6582253631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6279074-477A-43F6-B04A-9F6582253631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6279074-477A-43F6-B04A-9F6582253631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6279074-477A-43F6-B04A-9F6582253631}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

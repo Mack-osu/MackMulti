@@ -1,5 +1,6 @@
 ﻿using BanchoSharp.Multiplayer;
 using MackMultiBot.Behaviors.Data;
+using MackMultiBot.Data;
 using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
 using System;
@@ -43,6 +44,19 @@ namespace MackMultiBot.Behaviors
 					context.SendMessage("error while trying to get beatmap information.");
 					return;
 				}
+
+				var beatmapSet = (beatmapInfo as Beatmap).Set;
+
+				Data.BeatmapInfo = new BeatmapInformation
+				{
+					Id = beatmapInfo.Id,
+					SetId = beatmapInfo.SetId,
+					Name = beatmapSet?.Title ?? string.Empty,
+					Artist = beatmapSet?.Artist ?? string.Empty,
+					Length = beatmapInfo.TotalLength,
+					DrainLength = beatmapInfo.HitLength,
+					StarRating = beatmapAttributes.DifficultyRating
+				};
 
 				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
 				SendBeatmapInfo(beatmapInfo, beatmapAttributes);

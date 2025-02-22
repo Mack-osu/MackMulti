@@ -1,4 +1,5 @@
-﻿using MackMultiBot.Interfaces;
+﻿using MackMultiBot.Data;
+using MackMultiBot.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace MackMultiBot.Behaviors.Data
 {
 	public class MapManagerBehaviorData : IBehaviorData
 	{
+		public BeatmapInformation BeatmapInfo { get; set; } = new BeatmapInformation();
+
 		public int LastSetBeatmapId { get; set; }
 	}
 }

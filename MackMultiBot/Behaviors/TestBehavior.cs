@@ -14,7 +14,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "test")]
 		public void TestCommand(CommandContext commandContext)
 		{
-			commandContext.Reply($"Lobby Players: {string.Join(", ", commandContext.Lobby?.MultiplayerLobby?.Players[0].Name)}");
+			commandContext.Reply($"Lobby Players: {string.Join(", ", commandContext.Lobby?.MultiplayerLobby?.Players.Select(x => x.Name).ToList()!)}");
 			_logger.Info("TestBehavior: Executing TestCommand");
 		}
 	}

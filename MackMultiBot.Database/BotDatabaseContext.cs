@@ -11,6 +11,8 @@ namespace MackMultiBot.Database
 		public DbSet<LobbyConfiguration> LobbyConfigurations => Set<LobbyConfiguration>();
 		public DbSet<User> Users => Set<User>();
 		public DbSet<LobbyBehaviorData> LobbyBehaviorData => Set<LobbyBehaviorData>();
+		public DbSet<PlayedMap> PlayedMaps => Set<PlayedMap>();
+		public DbSet<Score> Scores => Set<Score>();
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{

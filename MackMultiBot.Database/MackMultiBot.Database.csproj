@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MackMultiBot.OsuData\MackMultiBot.OsuData.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BanchoSharp">
       <HintPath>..\..\..\BanchoSharp.dll</HintPath>
     </Reference>
