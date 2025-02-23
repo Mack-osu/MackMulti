@@ -19,6 +19,23 @@ namespace MackMultiBot.Behaviors
 		private MapManagerBehaviorData Data => _dataProvider.Data;
 		public async Task SaveData() => await _dataProvider.SaveData();
 
+		#region Command Events
+
+		[BotEvent(BotEventType.Command, "timeleft")]
+		public void OnTimeLeftCommand(CommandContext commandContext)
+		{
+			if (commandContext.Lobby?.MultiplayerLobby == null || !commandContext.Lobby.MultiplayerLobby.MatchInProgress)
+				return;
+
+			TimeSpan timePassed = DateTime.UtcNow - Data.LastMatchStartTime;
+
+			commandContext.Reply($"Estimated time left of current map: {(Data.BeatmapInfo.Length - timePassed):m\\:ss}");
+		}
+
+		#endregion
+
+		#region Bot Events
+
 		[BotEvent(BotEventType.MapChanged)]
 		public async Task OnMapChanged(BeatmapShell beatmapShell)
 		{
@@ -75,6 +92,14 @@ namespace MackMultiBot.Behaviors
 			}
 		}
 
+		[BotEvent(BotEventType.MatchStarted)]
+		public void OnMatchStarted()
+		{
+			Data.LastMatchStartTime = DateTime.UtcNow;
+		}
+
+		#endregion
+
 		void SendBeatmapInfo(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
 		{
 			var beatmapSet = (beatmapInfo as Beatmap).Set;
@@ -93,7 +118,8 @@ namespace MackMultiBot.Behaviors
 		private void ApplyBeatmap(int beatmapId)
 		{
 			Data.LastSetBeatmapId = beatmapId;
-			context.SendMessage($"{beatmapId.ToString()} 0");
+			context.SendMessage($"!mp map {beatmapId.ToString()} 0");
 		}
+
 	}
 }

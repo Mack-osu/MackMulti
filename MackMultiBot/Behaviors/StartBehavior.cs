@@ -19,7 +19,7 @@ namespace MackMultiBot.Behaviors
 
 
 		[BotEvent(BotEventType.Command, "start")]
-		public async Task OnStartCommand(CommandContext commandContext)
+		public void OnStartCommand(CommandContext commandContext)
 		{
 			if (commandContext.Player == null)
 				return;
@@ -28,7 +28,10 @@ namespace MackMultiBot.Behaviors
 				return;
 
 			if (commandContext.Args.Length == 0)
+			{
 				commandContext.Reply($"!mp start");
+				return;
+			}
 
 			// Try to parse into start timer
 			if (!int.TryParse(commandContext.Args[0], out int result))

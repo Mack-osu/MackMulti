@@ -177,10 +177,10 @@ namespace MackMultiBot.Behaviors
 
 			// Host already set
 			_logger.Debug("HostQueueBehavior: {hostName}", context?.MultiplayerLobby?.Host?.Name);
-			if (context.MultiplayerLobby.Host != null && Data.Queue[0].ToIrcNameFormat() == context.MultiplayerLobby.Host.Name.ToIrcNameFormat())
+			if (context?.MultiplayerLobby.Host != null && Data.Queue[0].ToIrcNameFormat() == context.MultiplayerLobby.Host.Name.ToIrcNameFormat())
 				return;
 
-			context.SendMessage($"!mp host {context.GetPlayerIdentifier(Data.Queue[0])}");
+			context?.SendMessage($"!mp host {context.GetPlayerIdentifier(Data.Queue[0])}");
 		}
 
 		void RotateQueue()

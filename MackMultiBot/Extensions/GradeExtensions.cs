@@ -18,7 +18,7 @@ public static class GradeExtensions
             Grade.B => 4,
             Grade.C => 3,
             Grade.D => 2,
-            //Grade.F => 1,
+            Grade.F => 1,
             _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
         };
     }
@@ -35,7 +35,7 @@ public static class GradeExtensions
             Grade.B => OsuRank.B,
             Grade.C => OsuRank.C,
             Grade.D => OsuRank.D,
-            //Grade.F => OsuRank.F,
+            Grade.F => OsuRank.F,
             _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
         };
     }
@@ -52,7 +52,7 @@ public static class GradeExtensions
             Grade.B => "B",
             Grade.C => "C",
             Grade.D => "D",
-            //Grade.F => "F",
+            Grade.F => "F",
             _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
         };
     }

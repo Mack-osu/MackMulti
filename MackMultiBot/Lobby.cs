@@ -23,7 +23,7 @@ namespace MackMultiBot
 		public BanchoConnection BanchoConnection { get; init; }
 
 		public MultiplayerLobby? MultiplayerLobby { get; private set; } = null;
-		public BehaviorEventProcessor BehaviorEventProcessor { get; private set; }
+		public BehaviorEventProcessor? BehaviorEventProcessor { get; private set; }
 
 		public int LobbyConfigurationId { get; set; }
 
@@ -156,7 +156,7 @@ namespace MackMultiBot
 
 			_shouldCreateNewInstance = true;
 
-			await BanchoConnection.BanchoClient?.MakeTournamentLobbyAsync(lobbyConfiguration.Name);
+			await BanchoConnection.BanchoClient.MakeTournamentLobbyAsync(lobbyConfiguration.Name)!;
 		}
 
 		#endregion

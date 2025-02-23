@@ -42,15 +42,10 @@ namespace MackMultiBot.Behaviors
 		{
 			var lobbyConfig = await context.Lobby.GetLobbyConfiguration();
 
-			var tasks = new List<Task>
-			{
-				EnsureRoomName(lobbyConfig),
-				EnsureRoomPassword(lobbyConfig),
-				EnsureMatchSettings(lobbyConfig),
-				EnsureMatchMods(lobbyConfig)
-			};
-
-			await Task.WhenAll(tasks);
+			EnsureRoomName(lobbyConfig);
+			EnsureRoomPassword(lobbyConfig);
+			EnsureMatchSettings(lobbyConfig);
+			EnsureMatchMods(lobbyConfig);
 		}
 
 		[BotEvent(BotEventType.Command, "close")]
@@ -66,7 +61,7 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply("!mp close");
 		}
 
-		private async Task EnsureRoomName(LobbyConfiguration configuration)
+		void EnsureRoomName(LobbyConfiguration configuration)
 		{
 			if (context.MultiplayerLobby.Name == configuration.Name)
 				return;
@@ -74,12 +69,12 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"!mp name {configuration.Name}");
 		}
 
-		private async Task EnsureRoomPassword(LobbyConfiguration configuration)
+		void EnsureRoomPassword(LobbyConfiguration configuration)
 		{
 			context.SendMessage($"!mp password {configuration.Password ?? ""}");
 		}
 
-		private async Task EnsureMatchSettings(LobbyConfiguration configuration)
+		void EnsureMatchSettings(LobbyConfiguration configuration)
 		{
 			var teamMode = ((int)(configuration.TeamMode ?? LobbyFormat.HeadToHead)).ToString();
 			var scoreMode = ((int)(configuration.ScoreMode ?? WinCondition.Score)).ToString();
@@ -89,7 +84,7 @@ namespace MackMultiBot.Behaviors
 		}
 
 		// Stolen from matte :)
-		private async Task EnsureMatchMods(LobbyConfiguration configuration)
+		void EnsureMatchMods(LobbyConfiguration configuration)
 		{
 			if (configuration.Mods == null)
 			{

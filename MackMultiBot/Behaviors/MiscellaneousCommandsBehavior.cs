@@ -87,22 +87,15 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.MatchFinished)]
 		public async Task OnMatchFinished()
 		{
-			_logger.Trace($"MiscellaneousCommandsBehavior: Match Finished");
-			// Wait 10 seconds to save recent scores data.
+			await context.MultiplayerLobby.RefreshSettingsAsync();
 			await Task.Delay(10000);
-			_logger.Trace($"MiscellaneousCommandsBehavior: Waited 10 seconds");
 
 			await Task.Run(async () =>
 			{
-				_logger.Trace($"MiscellaneousCommandsBehavior: Inside Task.Run");
 				var recentScores = await GetRecentScores();
 
-				_logger.Trace($"MiscellaneousCommandsBehavior: Ran Recent scores");
 				await StoreMapData(recentScores);
-				_logger.Trace($"MiscellaneousCommandsBehavior: Ran storemapdata");
 				await StorePlayerFinishData(recentScores);
-
-				_logger.Trace($"MiscellaneousCommandsBehavior: Ran storeplayerfinishdata");
 				//await AnnounceLeaderboardResults(recentScores);
 			});
 		}
@@ -113,8 +106,10 @@ namespace MackMultiBot.Behaviors
 
 		async Task<List<ScoreResult>> GetRecentScores()
 		{
-			var players = context.MultiplayerLobby.Players.Where(x => x.Id != null && x.Score > 0).ToList();
+			var players = context.MultiplayerLobby.Players.Where(x => x.Id != null).ToList();
 			var getScoreTasks = new List<Task<OsuSharp.Models.Scores.Score[]?>>();
+			
+			_logger.Info(string.Join(", ", players.Select(x => x.Name)));
 
 			await context.Lobby.Bot.OsuApiClient.EnsureAccessTokenAsync();
 
@@ -126,12 +121,11 @@ namespace MackMultiBot.Behaviors
 				{
 					await Task.Delay(index * 250);
 
-					return await context.UsingApiClient(async (apiClient) => await apiClient.GetUserScoresAsync(players[index].Id!.Value, UserScoreType.Recent, true, true, Ruleset.Osu, 1));
+					return await context.UsingApiClient(async (apiClient) => await apiClient.GetUserScoresAsync(players[index].Id!.Value, UserScoreType.Recent, 1, 1, "osu", 1));
 				}));
 			}
 
 			await Task.WhenAll(getScoreTasks);
-			_logger.Trace("MiscellaneousCommandsBehavior: Getting Recent scores: {getScoreTasks}", getScoreTasks.Count);
 
 			return players.Select(player => new ScoreResult((MultiplayerPlayer)player, getScoreTasks.Select(x => x.Result?.FirstOrDefault()).ToList().FirstOrDefault(x => x?.UserId == player.Id!))).ToList();
 		}
@@ -166,12 +160,6 @@ namespace MackMultiBot.Behaviors
 			{
 				foreach (var result in recentScores)
 				{
-					if (result.Score?.Statistics.Count50 == null)
-					{
-						_logger.Trace($"MiscellaneousCommandsBehavior: CONTINUED");
-						continue;
-					}
-
 					var score = result.Score;
 					var user = await userDb.FindOrCreateUser(result.Player.Name);
 
@@ -184,7 +172,7 @@ namespace MackMultiBot.Behaviors
 						OsuScoreId = score.Id,
 						BeatmapId = score.Beatmap!.Id,
 						TotalScore = score.TotalScore,
-						Rank = score.Grade.GetOsuRank(),
+						Rank = score.IsPass ? score.Grade.GetOsuRank() : OsuRank.F,
 						MaxCombo = score.MaxCombo,
 						Count300 = score.Statistics.Count300,
 						Count100 = score.Statistics.Count100,
