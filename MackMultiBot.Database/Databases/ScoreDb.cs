@@ -14,6 +14,12 @@ namespace MackMulti.Database.Databases
 {
 	public class ScoreDb : BaseDatabase<Score>
 	{
-
+		public async Task<List<Score>?> GetMapScoresOfUser(int mapId, int playerId)
+		{
+			return await _dbContext.Scores.
+				Where(x => x.BeatmapId == mapId && x.PlayerId == playerId).
+				OrderByDescending(x => x.Time).
+				ToListAsync();
+		}
 	}
 }

@@ -44,6 +44,25 @@ namespace MackMultiBot.Behaviors
 								$"({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} ({totalPlaytime.TotalHours:F0}h) in total).");
 		}
 
+		[BotEvent(BotEventType.Command, "bestmapscore")]
+		public async Task OnBestMapScoreCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player?.Id == null)
+				return;
+
+			await using var scoreDb = new ScoreDb();
+			var mapManagerDataProvider = new BehaviorDataProvider<MapManagerBehaviorData>(context.Lobby);
+			BeatmapInformation mapInfo = mapManagerDataProvider.Data.BeatmapInfo;
+
+			var bestScore = (await scoreDb.GetMapScoresOfUser(mapInfo.Id, commandContext.Player.Id.Value))?.MaxBy(x => x.TotalScore);
+
+			commandContext.Reply(bestScore != null ?
+				$"{commandContext.Player.Name}'s best score on [https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] is a {bestScore.GetAccuracy():0.00}% {bestScore.Rank} rank with {bestScore.MaxCombo}x combo, {bestScore.Count300}/{bestScore.Count100}/{bestScore.Count50}/{bestScore.CountMiss}."
+				: $"{commandContext.Player.Name}, you have not played this map in this lobby yet.");
+
+			// TODO: Add PP calculations, probably want to store these in the score database save
+		}
+
 		#endregion
 
 		#region Bot Events

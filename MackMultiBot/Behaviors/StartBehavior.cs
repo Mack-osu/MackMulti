@@ -47,5 +47,12 @@ namespace MackMultiBot.Behaviors
 			}
 			commandContext.Reply($"!mp start {result}");
 		}
+
+		[BotEvent(BotEventType.AllPlayersReady)]
+		public void OnAllPlayersReady()
+		{
+			context.SendMessage("All players ready, starting match");
+			context.SendMessage("!mp start");
+		}
 	}
 }
