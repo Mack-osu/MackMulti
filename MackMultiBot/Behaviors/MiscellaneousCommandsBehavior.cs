@@ -63,6 +63,29 @@ namespace MackMultiBot.Behaviors
 			// TODO: Add PP calculations, probably want to store these in the score database save
 		}
 
+		[BotEvent(BotEventType.Command, "recentscore")]
+		public async Task OnRecentScoreCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player?.Id == null)
+				return;
+
+			await using var scoreDb = new ScoreDb();
+
+			var latestScore = (await scoreDb.GetScoresOfUser(commandContext.Player.Id.Value))?.FirstOrDefault();
+
+			if (latestScore == null)
+			{
+				commandContext.Reply($"{commandContext.Player.Name}, you have do not have any scores in this lobby yet.");
+				return;
+			}
+
+			var map = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync((int)latestScore.BeatmapId));
+
+			commandContext.Reply($"{commandContext.Player.Name}'s most recent score in this lobby is a {latestScore.GetAccuracy():0.00}% {latestScore.Rank} rank with {latestScore.MaxCombo}x combo, {latestScore.Count300}/{latestScore.Count100}/{latestScore.Count50}/{latestScore.CountMiss} on [https://osu.ppy.sh/b/{latestScore.BeatmapId} [MapName]].");
+
+			// TODO: Add PP calculations, probably want to store these in the score database save
+		}
+
 		#endregion
 
 		#region Bot Events

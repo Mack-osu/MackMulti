@@ -20,12 +20,5 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"Lobby Players: {string.Join(", ", commandContext.Lobby?.MultiplayerLobby?.Players.Select(x => x.Name + $"[{x.Id}]").ToList()!)}");
 			_logger.Info("TestBehavior: Executing TestCommand");
 		}
-
-		[BotEvent(BotEventType.Command, "getrecentscore")]
-		public async Task GetRecentScores(CommandContext commandContext)
-		{
-			OsuSharp.Models.Scores.Score? score = (await context.UsingApiClient(async (apiClient) => await apiClient.GetUserScoresAsync(11584934, UserScoreType.Recent, 1, 1, "osu", 1)))?[0];
-			commandContext.Reply($"TotalScore: {score?.TotalScore}, IsPass: {score?.IsPass}");
-		}
 	}
 }

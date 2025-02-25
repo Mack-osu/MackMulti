@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace MackMultiBot.Commands
 {
-	public class GetRecentScoreCommand : ICommand
+	public class RecentScoreCommand : ICommand
 	{
-		public string Command => "getrecentscore";
+		public string Command => "recentscore";
 
-		public string[]? Aliases => ["grs"];
+		public string[]? Aliases => ["rs"];
 
 		public int MinimumArguments => 0;
 
 		public bool IsGlobal => false;
 
-		public bool AdminCommand => true;
+		public bool AdminCommand => false;
 
 		public string Usage => string.Empty;
 
