@@ -1,10 +1,16 @@
 ﻿using BanchoSharp.Multiplayer;
+using Humanizer;
+using Humanizer.Localisation;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Data;
+using MackMultiBot.Database;
+using MackMultiBot.Database.Entities;
+using MackMultiBot.Database.Migrations;
 using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +38,25 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"Estimated time left of current map: {(Data.BeatmapInfo.Length - timePassed):m\\:ss}");
 		}
 
+		[BotEvent(BotEventType.Command, "rules")]
+		public void OnRulesCommand(CommandContext commandContext)
+		{
+			using var dbContext = new BotDatabaseContext();
+			LobbyRuleConfiguration? ruleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
+
+			if (ruleConfig == null)
+			{
+				commandContext.Reply("This lobby has no rule configuration set up.");
+				return;
+			}
+			if (ruleConfig.LimitDifficulty)
+				commandContext.Reply($"Difficulty: {ruleConfig.MinimumDifficulty:0.00}* - {ruleConfig.MaximumDifficulty + ruleConfig.DifficultyMargin:0.00}*");
+
+			if (ruleConfig.LimitMapLength)
+				commandContext.Reply($"Map Length: {TimeSpan.FromSeconds(ruleConfig.MinimumMapLength):m\\:ss}" +
+									$" - {TimeSpan.FromSeconds(ruleConfig.MaximumMapLength):m\\:ss}");
+		}
+
 		#endregion
 
 		#region Bot Events
@@ -52,13 +77,22 @@ namespace MackMultiBot.Behaviors
 				{
 					_logger.Info("MapManagerBehavior: Invalid beatmap with id {BeatmapId}", beatmapShell.Id);
 					context.SendMessage("Selected beatmap is not submitted, please try another one.");
+					ApplyBeatmap(Data.LastSetBeatmapId);
 					return;
 				}
 
 				if (beatmapAttributes == null)
 				{
 					_logger.Error("MapManagerBehavior: Failed to get beatmap information for map {BeatmapId}", beatmapShell.Id);
-					context.SendMessage("error while trying to get beatmap information.");
+					context.SendMessage("Error while trying to get beatmap information, please try another one.");
+					ApplyBeatmap(Data.LastSetBeatmapId);
+					return;
+				}
+
+				if (!ValidateBeatmap(beatmapInfo, beatmapAttributes))
+				{
+					_logger.Trace("MapManagerBehavior: Invalid map chosen, reverting to latest valid pick");
+					ApplyBeatmap(Data.LastSetBeatmapId);
 					return;
 				}
 
@@ -108,7 +142,6 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"[https://osu.ppy.sh/b/{beatmapInfo.Id} {beatmapSet?.Artist} - {beatmapSet?.Title} [{beatmapInfo.Version}]] - [https://beatconnect.io/b/{beatmapInfo.Id} Beatconnect]");
 			context.SendMessage($"Star Rating: {roundedSr} | Length: {beatmapInfo.TotalLength:mm\\:ss} | BPM: {beatmapInfo.BPM} | {beatmapInfo.Status}");
 			context.SendMessage($"AR: {beatmapInfo.ApproachRate} | OD: {beatmapInfo.OverallDifficulty} | CS: {beatmapInfo.CircleSize} | HP: {beatmapInfo.CircleSize}");
-			// Api calls for map info such as AR, Star rating, mapper, etc.
 		}
 
 		/// <summary>
@@ -119,6 +152,56 @@ namespace MackMultiBot.Behaviors
 		{
 			Data.LastSetBeatmapId = beatmapId;
 			context.SendMessage($"!mp map {beatmapId.ToString()} 0");
+		}
+
+		bool ValidateBeatmap(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
+		{
+			using var dbContext = new BotDatabaseContext();
+			var lobbyRuleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
+
+			if (lobbyRuleConfig == null)
+			{
+				_logger.Warn("MapManagerBehavior: Lobby does not have a rule configuration. Map is valid by default");
+				return true;
+			}
+
+			// Validate Star Rating
+			if (lobbyRuleConfig.LimitDifficulty)
+			{
+				bool isWithinSrRange = !(difficultyAttributes.DifficultyRating > lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin) 
+										&& !(difficultyAttributes.DifficultyRating < lobbyRuleConfig.MinimumDifficulty);
+
+				if (!isWithinSrRange)
+				{
+					context.SendMessage($"Selected beatmap is outside of difficulty range of the lobby: {lobbyRuleConfig.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
+					return false;
+				}
+			}
+
+			// Validate Map Length
+			if (lobbyRuleConfig.LimitMapLength)
+			{
+				//bool isWithinLengthRange = !(beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfig.MaximumMapLength)
+				//							&& !(beatmapInfo.TotalLength.TotalSeconds < lobbyRuleConfig.MinimumMapLength);
+
+				if (beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfig.MaximumMapLength)
+				{
+					context.SendMessage($"Selected beatmap is too long for this lobby: " +
+						$"{TimeSpan.FromSeconds(lobbyRuleConfig.MinimumMapLength):m\\:ss}" +
+						$" - {TimeSpan.FromSeconds(lobbyRuleConfig.MaximumMapLength):m\\:ss}");
+					return false;
+				}
+
+				if (beatmapInfo.TotalLength.TotalSeconds < lobbyRuleConfig.MinimumMapLength)
+				{
+					context.SendMessage($"Selected beatmap is too short for this lobby: " +
+						$"{TimeSpan.FromSeconds(lobbyRuleConfig.MinimumMapLength):m\\:ss}" +
+						$" - {TimeSpan.FromSeconds(lobbyRuleConfig.MaximumMapLength):m\\:ss}");
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 	}

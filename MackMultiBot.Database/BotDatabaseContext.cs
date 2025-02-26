@@ -9,6 +9,7 @@ namespace MackMultiBot.Database
 
 		public DbSet<LobbyInstance> LobbyInstances => Set<LobbyInstance>();
 		public DbSet<LobbyConfiguration> LobbyConfigurations => Set<LobbyConfiguration>();
+		public DbSet<LobbyRuleConfiguration> LobbyRuleConfigurations => Set<LobbyRuleConfiguration>();
 		public DbSet<User> Users => Set<User>();
 		public DbSet<LobbyBehaviorData> LobbyBehaviorData => Set<LobbyBehaviorData>();
 		public DbSet<PlayedMap> PlayedMaps => Set<PlayedMap>();

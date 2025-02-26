@@ -24,7 +24,5 @@ namespace MackMultiBot.Database.Entities
 		public int? Size { get; set; } = 16;
 
 		public string? Password { get; set; } = string.Empty;
-
-		//public string[]? Behaviours { get; set; } maybe
 	}
 }
