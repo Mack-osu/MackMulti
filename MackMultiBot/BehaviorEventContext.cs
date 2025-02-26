@@ -1,18 +1,12 @@
 ﻿using BanchoSharp.Multiplayer;
 using MackMultiBot.Interfaces;
+using MackMultiBot.Logging;
 using OsuSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MackMultiBot
 {
 	public class BehaviorEventContext(ILobby lobby)
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("BehaviorEventContextLogger");
-
 		public ILobby Lobby { get; init; } = lobby;
 
 		public MultiplayerLobby MultiplayerLobby => Lobby.MultiplayerLobby!;
@@ -26,7 +20,7 @@ namespace MackMultiBot
 		{
 			if (Lobby.MultiplayerLobby == null)
 			{
-				_logger.Error("BehaviorEventContext: Attempt to send message while multiplayer lobby is null");
+				Logger.Log(LogLevel.Error, "BehaviorEventContext: Attempt to send message while multiplayer lobby is null");
 				throw new InvalidOperationException("Attempt to send message while multiplayer lobby is null.");
 			}
 

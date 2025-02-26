@@ -11,13 +11,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MackMultiBot.Logging;
 
 namespace MackMultiBot
 {
 	public class Lobby : ILobby
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("LobbyLogger");
-
 		public Bot Bot { get; init; }
 
 		public BanchoConnection BanchoConnection { get; init; }
@@ -42,18 +41,18 @@ namespace MackMultiBot
 
 			LobbyConfigurationId = lobbyConfigurationId;
 		}
-
+		
 		public async Task ConnectOrCreateAsync()
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
-				_logger.Error("Lobby: BanchoClient not initialized when creating lobby");
+				Logger.Log(LogLevel.Error, "Lobby: BanchoClient not initialized when creating lobby");
 				throw new InvalidOperationException("BanchoClient not initialized when creating lobby");
 			}
 
 			if (MultiplayerLobby != null)
 			{
-				_logger.Trace("Lobby: Lobby instance already exists, parting from previous instance...");
+				Logger.Log(LogLevel.Trace, "Lobby: Lobby instance already exists, parting from previous instance...");
 				await BanchoConnection.BanchoClient!.PartChannelAsync(MultiplayerLobby.ChannelName); 
 			}
 
@@ -70,7 +69,7 @@ namespace MackMultiBot
 
 			if (!_shouldCreateNewInstance)
 			{
-				_logger.Trace("Lobby: Attempting to join existing channel '{ExistingChannel}' for lobby '{LobbyName}'...", existingChannel, lobbyConfiguration.Name);
+				Logger.Log(LogLevel.Trace, $"Lobby: Attempting to join existing channel '{existingChannel}' for lobby '{lobbyConfiguration.Name}'...");
 
 				await BanchoConnection.BanchoClient.JoinChannelAsync(existingChannel);
 
@@ -78,7 +77,7 @@ namespace MackMultiBot
 			}
 			else
 			{
-				_logger.Trace("Lobby: Creating new channel for lobby '{LobbyName}'", lobbyConfiguration.Name);
+				Logger.Log(LogLevel.Trace, $"Lobby: Creating new channel for lobby '{lobbyConfiguration.Name}'");
 
 				await BanchoConnection.BanchoClient?.MakeTournamentLobbyAsync(lobbyConfiguration.Name)!;
 			}
@@ -90,7 +89,7 @@ namespace MackMultiBot
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
-				_logger.Warn("Lobby: BanchoConnection.BanchoClient is null during lobby creation event");
+				Logger.Log(LogLevel.Warn, "Lobby: BanchoConnection.BanchoClient is null during lobby creation event");
 				return;
 			}
 
@@ -113,7 +112,7 @@ namespace MackMultiBot
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
-				_logger.Warn("Lobby: BanchoConnection.BanchoClient is null during channel join.");
+				Logger.Log(LogLevel.Warn, "Lobby: BanchoConnection.BanchoClient is null during channel join.");
 				return;
 			}
 
@@ -125,7 +124,7 @@ namespace MackMultiBot
 			if (_shouldCreateNewInstance)
 				return;
 
-			_logger.Trace("Lobby: Joined channel {Channel} successfully, building lobby instance...", channel.ChannelName);
+			Logger.Log(LogLevel.Trace, $"Lobby: Joined channel {channel.ChannelName} successfully, building lobby instance...");
 
 			var lobbyConfiguration = await GetLobbyConfiguration();
 
@@ -139,20 +138,20 @@ namespace MackMultiBot
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
-				_logger.Warn("Lobby: BanchoConnection.BanchoClient is null during channel join failure.");
+				Logger.Log(LogLevel.Warn, "Lobby: BanchoConnection.BanchoClient is null during channel join failure.");
 				return;
 			}
 
 			// Not the channel we were trying to join, ignore
 			if (attemptedChannel != _channelId)
 			{
-				_logger.Trace("Lobby: Ignoring channel {AttemptedChannel}, not the channel we were trying to join, ({ChannelId}).", attemptedChannel, _channelId);
+				Logger.Log(LogLevel.Trace, $"Lobby: Ignoring channel {attemptedChannel}, not the channel we were trying to join, ({_channelId}).");
 				return;
 			}
 
 			var lobbyConfiguration = await GetLobbyConfiguration();
 
-			_logger.Warn("Lobby: Failed to join channel {attemptedChannel}, creating new isntance", attemptedChannel);
+			Logger.Log(LogLevel.Warn, $"Lobby: Failed to join channel {attemptedChannel}, creating new isntance");
 
 			_shouldCreateNewInstance = true;
 
@@ -194,7 +193,7 @@ namespace MackMultiBot
 
 			await BehaviorEventProcessor.OnInitializeEvent();
 
-			_logger.Trace("Lobby: Lobby instance built successfully");
+			Logger.Log(LogLevel.Trace, "Lobby: Lobby instance built successfully");
 		}
 
 		public async Task<LobbyConfiguration> GetLobbyConfiguration()
@@ -204,7 +203,7 @@ namespace MackMultiBot
 			var configuration = await context.LobbyConfigurations.FirstOrDefaultAsync(x => x.Id == LobbyConfigurationId);
 			if (configuration == null)
 			{
-				_logger.Error("Lobby: Failed to find lobby configuration.");
+				Logger.Log(LogLevel.Error, "Lobby: Failed to find lobby configuration.");
 
 				throw new InvalidOperationException("Failed to find lobby configuration.");
 			}

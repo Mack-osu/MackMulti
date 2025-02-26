@@ -2,20 +2,14 @@
 using BanchoSharp.Interfaces;
 using BanchoSharp.Multiplayer;
 using MackMultiBot.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using MackMultiBot.Logging;
 using System.Reflection;
-using System.Text;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace MackMultiBot
 {
 	public class BehaviorEventProcessor(ILobby lobby)
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("BehaviorEventProcessorLogger");
-
 		List<BotBehaviorEvent> _events = [];
 		List<string> _registeredBehaviors = [];
 
@@ -31,7 +25,7 @@ namespace MackMultiBot
 
 			if (behaviorType == null)
 			{
-				_logger.Error("BehaviorEventProcessor: Attempted to register nonexistant behavior '{behavior}'", behavior);
+				Logger.Log(LogLevel.Error, $"BehaviorEventProcessor: Attempted to register nonexistant behavior '{behavior}'");
 				throw new InvalidOperationException($"BehaviorEventProcessor: Attempted to register nonexistant behavior '{behavior}'");
 			}
 
@@ -52,7 +46,7 @@ namespace MackMultiBot
 			Activator.CreateInstance(behaviorType, new BehaviorEventContext(lobby));
 			_registeredBehaviors.Add(behavior);
 
-			_logger.Trace("BehaviorEventProcessor: Successfully registered behavior '{behavior}'", behavior);
+			Logger.Log(LogLevel.Info, $"BehaviorEventProcessor: Successfully registered behavior '{behavior}'");
 		}
 	
 		public void Start()
@@ -185,7 +179,7 @@ namespace MackMultiBot
 
 		async Task BehaviorEventPump(ChannelReader<EventExecution> reader, string behaviorName)
 		{
-			_logger.Trace("BehaviorEventPorcessor: Starting pump for behavior '{behavior}'", behaviorName);
+			Logger.Log(LogLevel.Trace, $"BehaviorEventPorcessor: Starting pump for behavior '{behaviorName}'");
 
 			while (await reader.WaitToReadAsync())
 			{
@@ -216,16 +210,16 @@ namespace MackMultiBot
 						await Task.WhenAny(executeEventTask, Task.Delay(TimeSpan.FromSeconds(15)));
 
 						if (!executeEventTask.IsCompleted)
-							_logger.Error("BehaviorEventProcessor: Timeout while executing callback {CallbackName}.{MethodName}()", behaviorEvent.Name, behaviorEvent.Method.Name);
+							Logger.Log(LogLevel.Error, $"BehaviorEventProcessor: Timeout while executing callback {behaviorEvent.Name}.{behaviorEvent.Method.Name}()");
 					}
 					catch (Exception e)
 					{
-						_logger.Error("BehaviorEventProcessor: Exception while executing callback {CallbackName}.{MethodName}(), {Exception}", behaviorEvent.Name, behaviorEvent.Method.Name, e);
+						Logger.Log(LogLevel.Error, $"BehaviorEventProcessor: Exception while executing callback {behaviorEvent.Name}.{behaviorEvent.Method.Name}(), {e}");
 					}
 				}
 			}
 
-			_logger.Trace("BehaviorEventPorcessor: Pump stopped for behavior '{behavior}'", behaviorName);
+			Logger.Log(LogLevel.Trace, $"BehaviorEventPorcessor: Pump stopped for behavior '{behaviorName}'");
 		}
 
 		record EventExecution(BotBehaviorEvent BehaviorEvent, object? Param);

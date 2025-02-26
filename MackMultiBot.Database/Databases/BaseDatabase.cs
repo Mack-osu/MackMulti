@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MackMulti.Database.Databases
+namespace MackMultiBot.Database.Databases
 {
 	public class BaseDatabase<T> where T : class
 	{

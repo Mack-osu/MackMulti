@@ -1,5 +1,4 @@
-﻿using BanchoSharp;
-using BanchoSharp.Interfaces;
+﻿using BanchoSharp.Interfaces;
 using MackMultiBot.Bancho;
 using MackMultiBot.Bancho.Data;
 using MackMultiBot.Bancho.Interfaces;
@@ -7,29 +6,28 @@ using MackMultiBot.Database;
 using MackMultiBot.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuSharp;
+using MackMultiBot.Logging;
 
 namespace MackMultiBot
 {
 	public class Bot(BotConfiguration botConfiguration)
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("BotLogger");
-
 		public List<ILobby> Lobbies { get; } = [];
 
 		public BanchoConnection BanchoConnection { get; } = new(botConfiguration);
 		public OsuApiClient OsuApiClient { get; } = new(botConfiguration.OsuApiClientId, botConfiguration.OsuApiClientSecret);
 
-		public CommandProcessor CommandProcessor { get; private set; }
+		public CommandProcessor? CommandProcessor { get; private set; }
 
-		public Action<IChatChannel> OnBanchoChannelJoined;
-		public Action<string> OnBanchoChannelJoinFailed;
-		public Action<IMultiplayerLobby> OnBanchoLobbyCreated;
+		public Action<IChatChannel>? OnBanchoChannelJoined;
+		public Action<string>? OnBanchoChannelJoinFailed;
+		public Action<IMultiplayerLobby>? OnBanchoLobbyCreated;
 
 		// This class will also be used to handle creating and starting lobbies.
 
 		public async Task StartAsync()
 		{
-			_logger.Info("Bot starting");
+			Logger.Log(LogLevel.Trace, "Bot starting");
 
 			BanchoConnection.OnReady += OnBanchoReady;
 
@@ -41,7 +39,7 @@ namespace MackMultiBot
 		{
 			await using var context = new BotDatabaseContext();
 
-			_logger.Trace("Bot: Loading lobby configurations...");
+			Logger.Log(LogLevel.Trace, "Bot: Loading lobby configurations...");
 
 			var lobbyConfigurations = await context.LobbyConfigurations.ToListAsync();
 
@@ -51,9 +49,7 @@ namespace MackMultiBot
 
 				Lobbies.Add(lobby);
 
-				//OnLobbyCreated?.Invoke(lobby);
-
-				_logger.Info("Bot: Loaded lobby configuration with id {LobbyConfigurationId}", lobbyConfiguration.Id);
+				Logger.Log(LogLevel.Info, $"Bot: Loaded lobby configuration with id {lobbyConfiguration.Id}");
 			}
 		}
 
@@ -61,7 +57,7 @@ namespace MackMultiBot
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
-				_logger.Error("Bot: BanchoClient null when ready? how+????");
+				Logger.Log(LogLevel.Error, "Bot: BanchoClient null when ready? how+????");
 				return;
 			}
 
@@ -71,7 +67,7 @@ namespace MackMultiBot
 
 			foreach (var lobby in Lobbies)
             {
-                _logger.Info("Bot: Starting lobby with id {LobbyConfigurationId}...", lobby.LobbyConfigurationId);
+                Logger.Log(LogLevel.Info, $"Bot: Starting lobby with id {lobby.LobbyConfigurationId}...");
                 
                 await lobby.ConnectOrCreateAsync();
             }

@@ -2,6 +2,7 @@
 using BanchoSharp.Interfaces;
 using MackMultiBot.Bancho.Data;
 using MackMultiBot.Bancho.Interfaces;
+using MackMultiBot.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,6 @@ namespace MackMultiBot.Bancho
 {
 	public class BanchoConnection : IBanchoConnection
     {
-        NLog.Logger _logger = NLog.LogManager.GetLogger("ConnectionLogger");
-
         public IBanchoClient? BanchoClient { get; private set; }
 
 		public bool IsConnected { get; private set; }
@@ -55,11 +54,11 @@ namespace MackMultiBot.Bancho
             if (IsConnected)
                 await DisconnectAsync();
 
-			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.Username, _banchoConfiguration.Password), LogLevel.None, false));
+			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.Username, _banchoConfiguration.Password), BanchoSharp.LogLevel.None, false));
 
             BanchoClient.OnAuthenticated += BanchoOnAuthenticated;
 
-            _logger.Info("BanchoConnection: Connecting to Bancho");
+            Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Connecting to Bancho");
 
             try
             {
@@ -67,11 +66,11 @@ namespace MackMultiBot.Bancho
             }
             catch (Exception e)
             {
-                _logger.Error("BanchoConnection: Exception during connection to Bancho, {Exception}", e);
+				Logging.Logger.Log(Logging.LogLevel.Error, $"BanchoConnection: Exception during connection to Bancho, {e}");
                 return;
             }
 
-            _logger.Info("BanchoConnection: Bancho connection terminated");
+			Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Bancho connection terminated");
         }
 
         private async Task DisconnectAsync()
@@ -83,7 +82,7 @@ namespace MackMultiBot.Bancho
 
             if (BanchoClient != null)
             {
-                _logger.Info("BanchoConnection: Disconnecting from Bancho");
+				Logging.Logger.Log(Logging.LogLevel.Trace, "BanchoConnection: Disconnecting from Bancho");
 
                 await BanchoClient.DisconnectAsync();
 
@@ -95,12 +94,12 @@ namespace MackMultiBot.Bancho
             BanchoClient = null;
             IsConnected = false;
 
-            _logger.Info("BanchoConnection: Disconnected from Bancho successfully");
+			Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Disconnected from Bancho successfully");
         }
 
         private void BanchoOnAuthenticated()
         {
-            _logger.Info("BanchoConnection: Authenticated with Bancho successfully");
+			Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Authenticated with Bancho successfully");
 
             IsConnected = true;
 

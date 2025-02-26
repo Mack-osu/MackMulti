@@ -1,20 +1,13 @@
 ﻿using BanchoSharp.Interfaces;
 using MackMultiBot.Bancho.Data;
 using MackMultiBot.Bancho.Interfaces;
-using NLog;
-using System;
+using MackMultiBot.Logging;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MackMultiBot.Bancho
 {
 	internal class MessageHandler(IBanchoConnection banchoConnection) : IMessageHandler
 	{
-        NLog.Logger _logger = NLog.LogManager.GetLogger("MessageLogger");
-
         public bool IsRunning { get; private set; } = false;
 
 		public event Action<IPrivateIrcMessage>? OnMessageReceived;
@@ -38,7 +31,7 @@ namespace MackMultiBot.Bancho
 
 		public void Start()
 		{
-			_logger.Trace("MessageHandler: Starting message pump");
+			Logger.Log(LogLevel.Trace, "MessageHandler: Starting message pump");
 
 			// Empty message queue
 			_messageQueue.Dispose();
@@ -56,7 +49,7 @@ namespace MackMultiBot.Bancho
 
 		public void Stop()
         {
-            _logger.Trace("MessageHandler: Stopping message pump");
+            Logger.Log(LogLevel.Trace, "MessageHandler: Stopping message pump");
 
             _cancellationTokenSource?.Cancel();
 
@@ -92,25 +85,27 @@ namespace MackMultiBot.Bancho
                 }
                 catch (Exception e)
                 {
-                    _logger.Warn(e, "MessageHandler: Failed to send message '{message}' to '{channel}'", message.Content, message.Channel);
+                    Logger.Log(LogLevel.Warn, $"MessageHandler: Failed to send message '{message.Content}' to '{message.Channel}' | Exception: {e}");
                 }
             }
 
-            _logger.Trace("MessageHandler: Message pump has stopped");
+            Logger.Log(LogLevel.Info, "MessageHandler: Message pump has stopped");
         }
 
         private void BanchoOnPrivateMessageReceived(IPrivateIrcMessage e)
         {
-            _logger.Info("MessageHandler: [{Recipient}] {Sender}: {Content}", e.Recipient, e.Sender, e.Content);
+			//Logger.Log(LogLevel.Chat, $"[{e.Recipient}] {e.Sender}: {e.Content}");
+			Logger.Log(LogLevel.Chat, $"{e.Sender}: {e.Content}");
 
-            OnMessageReceived?.Invoke(e);
+			OnMessageReceived?.Invoke(e);
         }
 
         private void BanchoOnPrivateMessageSent(IPrivateIrcMessage e)
-        {
-            _logger.Info("MessageHandler: [{Recipient}] {Sender}: {Content}", e.Recipient, e.Sender, e.Content);
+		{
+			//Logger.Log(LogLevel.Chat, $"[{e.Recipient}] {e.Sender}: {e.Content}");
+			Logger.Log(LogLevel.Chat, $"{e.Sender}: {e.Content}");
 
-            OnMessageSent?.Invoke(e);
+			OnMessageSent?.Invoke(e);
         }
     }
 }

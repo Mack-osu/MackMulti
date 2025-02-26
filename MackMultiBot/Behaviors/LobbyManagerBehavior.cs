@@ -1,23 +1,13 @@
 ﻿using BanchoSharp.Multiplayer;
-using MackMulti.Database.Databases;
-using MackMultiBot.Bancho;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
 {
 	public class LobbyManagerBehavior(BehaviorEventContext context) : IBehavior, IBehaviorDataConsumer
 	{
-		static NLog.Logger _logger = NLog.LogManager.GetLogger("LobbyManagerBehaviorLogger");
-
 		readonly BehaviorDataProvider<LobbyManagerBehaviorData> _dataProvider = new(context.Lobby);
 		private LobbyManagerBehaviorData Data => _dataProvider.Data;
 

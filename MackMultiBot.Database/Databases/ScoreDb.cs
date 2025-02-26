@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 
-namespace MackMulti.Database.Databases
+namespace MackMultiBot.Database.Databases
 {
 	public class ScoreDb : BaseDatabase<Score>
 	{

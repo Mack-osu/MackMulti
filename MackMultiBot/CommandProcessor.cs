@@ -1,21 +1,13 @@
 ﻿using BanchoSharp.Interfaces;
-using MackMulti.Database.Databases;
-using MackMultiBot.Database;
-using MackMultiBot.Database.Entities;
+using MackMultiBot.Database.Databases;
 using MackMultiBot.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using MackMultiBot.Logging;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MackMultiBot
 {
 	public class CommandProcessor(Bot bot)
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("CommandProcessorLogger");
-
 		readonly Dictionary<string, MethodInfo> _commandMethods = new();
 		List<ICommand> _commands = [];
 
@@ -35,7 +27,7 @@ namespace MackMultiBot
 
 		private void RegisterCommands()
 		{
-			_logger.Trace("CommandProcessor: Registering commands...");
+			Logger.Log(LogLevel.Trace, "CommandProcessor: Registering commands...");
 
 			var commands = AppDomain.CurrentDomain
 				.GetAssemblies()
@@ -49,11 +41,11 @@ namespace MackMultiBot
 
 				if (command == null)
 				{
-					_logger.Warn("CommandProcessor: Failed to create instance of command {CommandType}", commandType);
+					Logger.Log(LogLevel.Warn, $"CommandProcessor: Failed to create instance of command {commandType}");
 					continue;
 				}
 
-				_logger.Trace("CommandProcessor: Registered command {CommandType}", commandType);
+				Logger.Log(LogLevel.Info, $"CommandProcessor: Registered command {commandType}");
 
 				_commands.Add((ICommand)command);
 			}
@@ -124,7 +116,7 @@ namespace MackMultiBot
 				}
 				catch (Exception e)
 				{
-					_logger.Error(e, "CommandProcessor: Error executing command {Command} in lobby {Lobby}", command.Command, lobby.MultiplayerLobby.ChannelName);
+					Logger.Log(LogLevel.Error, $"CommandProcessor: Error executing command {command.Command} in lobby {lobby.MultiplayerLobby.ChannelName} | Exception: {e}");
 				}
 			}
 		}

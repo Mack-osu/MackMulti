@@ -2,18 +2,12 @@
 using MackMultiBot.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MackMultiBot.Logging;
 
 namespace MackMultiBot
 {
 	public sealed class BehaviorDataProvider<T> where T : class
 	{
-		static NLog.Logger _logger = NLog.LogManager.GetLogger("BehaviorDataProviderLogger");
-
 		public readonly T Data = null!;
 
 		private readonly ILobby _lobby;
@@ -29,7 +23,7 @@ namespace MackMultiBot
 			var data = dbContext.LobbyBehaviorData.FirstOrDefault(x => x.LobbyConfigurationId == lobby.LobbyConfigurationId && x.BehaviorName == typeName);
 			if (data == null)
 			{
-				_logger.Trace("BehaviorDataProvider: Unable to find data for {BehaviorDataType}, creating new one", typeName);
+				Logger.Log(LogLevel.Trace, $"BehaviorDataProvider: Unable to find data for {typeName}, creating new one");
 
 				Data = (T)Activator.CreateInstance(typeof(T))!;
 

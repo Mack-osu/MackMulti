@@ -1,4 +1,5 @@
 ﻿using MackMultiBot.OsuData.Data;
+using MackMultiBot.Logging;
 using OsuSharp.Models.Scores;
 
 namespace MackMultiBot.OsuData.Extensions;
@@ -6,8 +7,6 @@ namespace MackMultiBot.OsuData.Extensions;
 // Also stolen from matte
 public static class ScoreExtensions
 {
-	static NLog.Logger _logger = NLog.LogManager.GetLogger("ScoreExtensionsLogger");
-
 	private static readonly Dictionary<string, OsuMods> ModsAbbreviationMap = new()
     {
         { "NF", OsuMods.NoFail },
@@ -37,7 +36,7 @@ public static class ScoreExtensions
             }
             else
             {
-				_logger.Error($"GetModsBitset: Unknown mod abbreviation: {mod}");
+				Logger.Log(LogLevel.Error, $"GetModsBitset: Unknown mod abbreviation: {mod}");
             }
         }
 

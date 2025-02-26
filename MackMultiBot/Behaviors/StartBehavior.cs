@@ -1,23 +1,9 @@
-﻿using BanchoSharp.Multiplayer;
-using MackMulti.Database.Databases;
-using MackMultiBot.Bancho;
-using MackMultiBot.Behaviors.Data;
-using MackMultiBot.Database.Entities;
-using MackMultiBot.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MackMultiBot.Interfaces;
 
 namespace MackMultiBot.Behaviors
 {
 	public class StartBehavior(BehaviorEventContext context) : IBehavior
 	{
-		static NLog.Logger _logger = NLog.LogManager.GetLogger("StartBehaviorLogger");
-
-
 		[BotEvent(BotEventType.Command, "start")]
 		public void OnStartCommand(CommandContext commandContext)
 		{

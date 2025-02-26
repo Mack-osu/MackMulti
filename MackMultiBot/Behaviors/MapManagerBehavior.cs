@@ -1,26 +1,16 @@
 ﻿using BanchoSharp.Multiplayer;
-using Humanizer;
-using Humanizer.Localisation;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Data;
 using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
-using MackMultiBot.Database.Migrations;
 using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MackMultiBot.Logging;
 
 namespace MackMultiBot.Behaviors
 {
 	public class MapManagerBehavior(BehaviorEventContext context) : IBehavior, IBehaviorDataConsumer
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("MapManagerBehaviorLogger");
-
 		readonly BehaviorDataProvider<MapManagerBehaviorData> _dataProvider = new(context.Lobby);
 		private MapManagerBehaviorData Data => _dataProvider.Data;
 		public async Task SaveData() => await _dataProvider.SaveData();
@@ -75,7 +65,7 @@ namespace MackMultiBot.Behaviors
 
 				if (beatmapInfo == null)
 				{
-					_logger.Info("MapManagerBehavior: Invalid beatmap with id {BeatmapId}", beatmapShell.Id);
+					Logger.Log(LogLevel.Info, $"MapManagerBehavior: Invalid beatmap selected with id {beatmapShell.Id}");
 					context.SendMessage("Selected beatmap is not submitted, please try another one.");
 					ApplyBeatmap(Data.LastSetBeatmapId);
 					return;
@@ -83,7 +73,7 @@ namespace MackMultiBot.Behaviors
 
 				if (beatmapAttributes == null)
 				{
-					_logger.Error("MapManagerBehavior: Failed to get beatmap information for map {BeatmapId}", beatmapShell.Id);
+					Logger.Log(LogLevel.Warn, $"MapManagerBehavior: Failed to get beatmap information for map {beatmapShell.Id}");
 					context.SendMessage("Error while trying to get beatmap information, please try another one.");
 					ApplyBeatmap(Data.LastSetBeatmapId);
 					return;
@@ -91,7 +81,7 @@ namespace MackMultiBot.Behaviors
 
 				if (!ValidateBeatmap(beatmapInfo, beatmapAttributes))
 				{
-					_logger.Trace("MapManagerBehavior: Invalid map chosen, reverting to latest valid pick");
+					Logger.Log(LogLevel.Trace, "MapManagerBehavior: Invalid map chosen, reverting to latest valid pick");
 					ApplyBeatmap(Data.LastSetBeatmapId);
 					return;
 				}
@@ -114,14 +104,13 @@ namespace MackMultiBot.Behaviors
 			}
 			catch (HttpRequestException e)
 			{
-				_logger.Error("MapManagerBehavior: Timed out getting beatmap information for map {BeatmapId}, {e}", beatmapShell.Id, e);
+				Logger.Log(LogLevel.Error, $"MapManagerBehavior: Timed out getting beatmap information for map {beatmapShell.Id}, {e}");
 
 				context.SendMessage("osu!api timed out while trying to get beatmap information");
 			}
 			catch (Exception e)
 			{
-				_logger.Error(e, "MapManagerBehavior: Exception while trying to get beatmap information for map {BeatmapId}, {e}", beatmapShell.Id, e);
-
+				Logger.Log(LogLevel.Error, $"MapManagerBehavior: Exception while trying to get beatmap information for map {beatmapShell.Id}, {e}");
 				context.SendMessage("Internal error while trying to get beatmap information");
 			}
 		}
@@ -133,6 +122,8 @@ namespace MackMultiBot.Behaviors
 		}
 
 		#endregion
+
+		#region Beatmap Management
 
 		void SendBeatmapInfo(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
 		{
@@ -161,7 +152,7 @@ namespace MackMultiBot.Behaviors
 
 			if (lobbyRuleConfig == null)
 			{
-				_logger.Warn("MapManagerBehavior: Lobby does not have a rule configuration. Map is valid by default");
+				Logger.Log(LogLevel.Warn, "MapManagerBehavior: Lobby does not have a rule configuration. Map is valid by default");
 				return true;
 			}
 
@@ -204,5 +195,6 @@ namespace MackMultiBot.Behaviors
 			return true;
 		}
 
+		#endregion
 	}
 }

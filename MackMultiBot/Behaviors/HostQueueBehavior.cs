@@ -1,6 +1,5 @@
 ﻿using BanchoSharp.Interfaces;
 using BanchoSharp.Multiplayer;
-using MackMulti.Database.Databases;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
 using MackMultiBot.Interfaces;
@@ -11,13 +10,13 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using MackMultiBot.Logging;
+using MackMultiBot.Database.Databases;
 
 namespace MackMultiBot.Behaviors
 {
 	public class HostQueueBehavior(BehaviorEventContext context) : IBehavior, IBehaviorDataConsumer
 	{
-		static NLog.Logger _logger = NLog.LogManager.GetLogger("HostQueueHandlerLogger");
-
 		readonly BehaviorDataProvider<HostQueueBehaviorData> _dataProvider = new(context.Lobby);
 		private HostQueueBehaviorData Data => _dataProvider.Data;
 
@@ -94,7 +93,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Initialize)]
 		public void Initialize()
 		{
-			_logger.Info("HostQueueBehavior: Initializing");
+			Logger.Log(LogLevel.Info, "HostQueueBehavior: Initializing");
 			Data.Queue = new();
 		}
 
@@ -107,7 +106,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.PlayerJoined)]
 		public async Task OnPlayerJoined(MultiplayerPlayer player)
 		{
-			_logger.Trace("HostQueueBehavior: Player Joined {player}", player.Name);
+			Logger.Log(LogLevel.Trace, $"HostQueueBehavior: Player Joined {player.Name}");
 
 			await using var userDb = new UserDb();
 
@@ -118,7 +117,6 @@ namespace MackMultiBot.Behaviors
 				.AsEnumerable() // Pulls data into memory
 				.FirstOrDefault(x => x.Name.ToIrcNameFormat() == formattedUsername) == null)
 			{
-				Console.WriteLine("New player \n\n");
 				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "Welcome to the lobby!");
 				context.Lobby.BanchoConnection.MessageHandler.SendMessage(player.TargetableName(), "This bot currently is under active development and may not have all the features you'd expect. if you encounter any issues or have any suggestions, please let me know!");
 			}
@@ -134,7 +132,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.PlayerDisconnected)]
 		public Task OnPlayerDisconnected(MultiplayerPlayer player)
 		{
-			_logger.Trace("HostQueueBehavior: Player disconnected {player}", player.Name);
+			Logger.Log(LogLevel.Info, $"HostQueueBehavior: Player disconnected {player.Name}");
 
 			Data.Queue.Remove(player.Name);
 
@@ -149,7 +147,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.MatchFinished)]
 		public async Task OnMatchFinished()
 		{
-			_logger.Trace("HostQueueBehavior: Match Finished");
+			Logger.Log(LogLevel.Info, "HostQueueBehavior: Match Finished");
 
 			await SkipHost();
 			context.SendMessage(await GetQueueMessage());
@@ -173,10 +171,9 @@ namespace MackMultiBot.Behaviors
 			if (Data.Queue.Count == 0)
 				return;
 
-			_logger.Trace("HostQueueBehavior: Ensuring Queue");
+			Logger.Log(LogLevel.Trace, "HostQueueBehavior: Ensuring Queue");
 
 			// Host already set
-			_logger.Debug("HostQueueBehavior: {hostName}", context?.MultiplayerLobby?.Host?.Name);
 			if (context?.MultiplayerLobby.Host != null && Data.Queue[0].ToIrcNameFormat() == context.MultiplayerLobby.Host.Name.ToIrcNameFormat())
 				return;
 
@@ -188,7 +185,7 @@ namespace MackMultiBot.Behaviors
 			if (Data.Queue.Count == 0)
 				return;
 
-			_logger.Trace("HostQueueBehavior: Rotating Queue");
+			Logger.Log(LogLevel.Trace, "HostQueueBehavior: Rotating Queue");
 
 			string currentHost = Data.Queue[0];
 
@@ -201,7 +198,7 @@ namespace MackMultiBot.Behaviors
 			if (Data.Queue.Count == 0)
 				return;
 
-			_logger.Trace("HostQueueBehavior: Skipping to Next Host");
+			Logger.Log(LogLevel.Trace, "HostQueueBehavior: Skipping to Next Host");
 
 			await using var userDb = new UserDb();
 
@@ -222,8 +219,6 @@ namespace MackMultiBot.Behaviors
 
 		async Task<string> GetQueueMessage()
 		{
-			_logger.Trace("HostQueueBehavior: Getting Queue Message");
-
 			await using var userDb = new UserDb();
 
 			List<string> names = [];

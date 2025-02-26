@@ -1,26 +1,20 @@
 ﻿using BanchoSharp.Multiplayer;
 using Humanizer;
 using Humanizer.Localisation;
-using MackMulti.Database.Databases;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Data;
+using MackMultiBot.Database.Databases;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Extensions;
 using MackMultiBot.Interfaces;
+using MackMultiBot.Logging;
 using MackMultiBot.OsuData.Extensions;
 using OsuSharp.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
 {
 	public class MiscellaneousCommandsBehavior(BehaviorEventContext context) : IBehavior, IBehaviorDataConsumer
 	{
-		NLog.Logger _logger = NLog.LogManager.GetLogger("MiscellaneousCommandsBehaviorLogger");
-
 		readonly BehaviorDataProvider<MiscellaneousCommandsBehaviorData> _dataProvider = new(context.Lobby);
 		private MiscellaneousCommandsBehaviorData Data => _dataProvider.Data;
 		public async Task SaveData() => await _dataProvider.SaveData();
@@ -89,7 +83,7 @@ namespace MackMultiBot.Behaviors
 
 			if (map == null)
 			{
-				_logger.Warn("MiscellaneousCommandsBehavior: Could not find beatmap of id '{beatmapId}'", (int)latestScore.BeatmapId);
+				Logger.Log(LogLevel.Warn, $"MiscellaneousCommandsBehavior: Could not find beatmap of id '{(int)latestScore.BeatmapId}'");
 				return;
 			}
 
@@ -165,7 +159,7 @@ namespace MackMultiBot.Behaviors
 			var players = context.MultiplayerLobby.Players.Where(x => x.Id != null).ToList();
 			var getScoreTasks = new List<Task<OsuSharp.Models.Scores.Score[]?>>();
 			
-			_logger.Info(string.Join(", ", players.Select(x => x.Name)));
+			Logger.Log(LogLevel.Trace, $"Getting recent scores of players: {string.Join(", ", players.Select(x => x.Name))}");
 
 			await context.Lobby.Bot.OsuApiClient.EnsureAccessTokenAsync();
 
@@ -217,6 +211,10 @@ namespace MackMultiBot.Behaviors
 				foreach (var result in recentScores)
 				{
 					var score = result.Score;
+
+					if (score == null)
+						continue;
+
 					var user = await userDb.FindOrCreateUser(result.Player.Name);
 
 					await scoreDb.AddAsync(new Score
@@ -239,11 +237,11 @@ namespace MackMultiBot.Behaviors
 					});
 				}
 
-				_logger.Trace($"MiscellaneousCommandsBehavior: Stored {recentScores.Count} scores for game {map.Id}");
+				Logger.Log(LogLevel.Trace, $"MiscellaneousCommandsBehavior: Stored {recentScores.Count} scores for game {map.Id}");
 			}
 			catch (Exception e)
 			{
-				_logger.Error($"MiscellaneousCommandsBehavior: Exception at StoreScoreData(): {e}");
+				Logger.Log(LogLevel.Error, $"MiscellaneousCommandsBehavior: Exception at StoreScoreData(): {e}");
 			}
 
 			await scoreDb.SaveAsync();
