@@ -44,6 +44,12 @@ namespace MackMultiBot.Behaviors
 								$"({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} ({totalPlaytime.TotalHours:F0}h) in total).");
 		}
 
+		[BotEvent(BotEventType.Command, "playcount")]
+		public void OnPlaycountCommand(CommandContext commandContext)
+		{
+			commandContext.Reply($"{commandContext.Player?.Name} has played a total of {commandContext.User.Playcount} matches, with {commandContext.User.MatchWins} wins!");
+		}
+
 		[BotEvent(BotEventType.Command, "bestmapscore")]
 		public async Task OnBestMapScoreCommand(CommandContext commandContext)
 		{
@@ -79,9 +85,17 @@ namespace MackMultiBot.Behaviors
 				return;
 			}
 
-			var map = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync((int)latestScore.BeatmapId));
+			var map = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync((int)latestScore.BeatmapId));
 
-			commandContext.Reply($"{commandContext.Player.Name}'s most recent score in this lobby is a {latestScore.GetAccuracy():0.00}% {latestScore.Rank} rank with {latestScore.MaxCombo}x combo, {latestScore.Count300}/{latestScore.Count100}/{latestScore.Count50}/{latestScore.CountMiss} on [https://osu.ppy.sh/b/{latestScore.BeatmapId} [MapName]].");
+			if (map == null)
+			{
+				_logger.Warn("MiscellaneousCommandsBehavior: Could not find beatmap of id '{beatmapId}'", (int)latestScore.BeatmapId);
+				return;
+			}
+
+			var set = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(map!.SetId));
+
+			commandContext.Reply($"{commandContext.Player.Name}'s most recent score in this lobby is a {latestScore.GetAccuracy():0.00}% {latestScore.Rank} rank with {latestScore.MaxCombo}x combo, {latestScore.Count300}/{latestScore.Count100}/{latestScore.Count50}/{latestScore.CountMiss} on [https://osu.ppy.sh/b/{latestScore.BeatmapId} {set?.Title}].");
 
 			// TODO: Add PP calculations, probably want to store these in the score database save
 		}
