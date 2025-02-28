@@ -1,4 +1,5 @@
 ﻿using BanchoSharp.Interfaces;
+using BanchoSharp.Messaging.ChatMessages;
 using MackMultiBot.Bancho.Data;
 using MackMultiBot.Bancho.Interfaces;
 using MackMultiBot.Logging;
@@ -6,7 +7,7 @@ using System.Collections.Concurrent;
 
 namespace MackMultiBot.Bancho
 {
-	internal class MessageHandler(IBanchoConnection banchoConnection) : IMessageHandler
+	public class MessageHandler(IBanchoConnection banchoConnection) : IMessageHandler
 	{
         public bool IsRunning { get; private set; } = false;
 
