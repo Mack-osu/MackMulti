@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <Reference Include="BanchoSharp">
-      <HintPath>..\..\..\BanchoSharp.dll</HintPath>
+      <HintPath>..\..\BanchoSharp\bin\Debug\net6.0\BanchoSharp.dll</HintPath>
     </Reference>
     <Reference Include="OsuSharp">
       <HintPath>..\..\osu-sharp\OsuSharp\bin\Debug\netstandard2.0\Debug\net8.0\OsuSharp.dll</HintPath>

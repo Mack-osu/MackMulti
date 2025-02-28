@@ -52,6 +52,10 @@ namespace MackMultiBot.Logging
 					Console.ForegroundColor = ConsoleColor.Cyan;
 					break;
 
+				case LogLevel.Bancho:
+					Console.ForegroundColor = ConsoleColor.DarkBlue;
+					break;
+
 				case LogLevel.Trace:
 					Console.ForegroundColor = ConsoleColor.Gray;
 					break;
@@ -88,6 +92,10 @@ namespace MackMultiBot.Logging
 					Console.ForegroundColor = ConsoleColor.White;
 					break;
 
+				case LogLevel.Bancho:
+					Console.ForegroundColor = ConsoleColor.DarkGray;
+					break;
+
 				case LogLevel.Trace:
 					Console.ForegroundColor = ConsoleColor.Gray;
 					break;
@@ -118,6 +126,7 @@ namespace MackMultiBot.Logging
 	public enum LogLevel
 	{
 		Chat,
+		Bancho,
 
 		Trace,
 		Info,

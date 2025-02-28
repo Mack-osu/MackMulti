@@ -17,7 +17,7 @@ namespace MackMultiBot.Bancho
         private BlockingCollection<Message> _messageQueue = new(50);
 
         private CancellationTokenSource? _cancellationTokenSource;
-        private CancellationToken CancellationToken => _cancellationTokenSource!.Token;
+        private CancellationToken _cancellationToken => _cancellationTokenSource!.Token;
 
         private Task? _messagePumpTask;
 
@@ -75,7 +75,7 @@ namespace MackMultiBot.Bancho
             {
                 var message = _messageQueue.Take();
 
-                if (CancellationToken.IsCancellationRequested || banchoConnection.BanchoClient == null)
+                if (_cancellationToken.IsCancellationRequested || banchoConnection.BanchoClient == null)
                     break;
 
                 message.Sent = DateTime.UtcNow;
@@ -94,9 +94,11 @@ namespace MackMultiBot.Bancho
         }
 
         private void BanchoOnPrivateMessageReceived(IPrivateIrcMessage e)
-        {
-			//Logger.Log(LogLevel.Chat, $"[{e.Recipient}] {e.Sender}: {e.Content}");
-			Logger.Log(LogLevel.Chat, $"{e.Sender}: {e.Content}");
+        {   
+            if (e.IsBanchoBotMessage)
+				Logger.Log(LogLevel.Bancho, $"{e.Sender}: {e.Content}");
+			else
+				Logger.Log(LogLevel.Chat, $"{e.Sender}: {e.Content}");
 
 			OnMessageReceived?.Invoke(e);
         }

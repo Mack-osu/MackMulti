@@ -24,8 +24,10 @@ namespace MackMultiBot.Bancho
 
         public CancellationToken? ConnectionCancellationToken => _cancellationTokenSource?.Token;
 
-        private CancellationTokenSource? _cancellationTokenSource;
-        private readonly BotConfiguration _banchoConfiguration;
+        CancellationTokenSource? _cancellationTokenSource;
+        readonly BotConfiguration _banchoConfiguration;
+
+        ConnectionWatch? _connectionWatch;
 
         public BanchoConnection(BotConfiguration banchoClientConfiguration)
         {
@@ -75,7 +77,14 @@ namespace MackMultiBot.Bancho
 
         private async Task DisconnectAsync()
         {
-            if (MessageHandler.IsRunning)
+			if (_connectionWatch?.IsRunning == true)
+			{
+				_connectionWatch.OnConnectionLost -= OnConnectionLost;
+				_connectionWatch.Stop();
+				_connectionWatch = null;
+			}
+
+			if (MessageHandler.IsRunning)
             {
                 MessageHandler.Stop();
             }
@@ -98,14 +107,65 @@ namespace MackMultiBot.Bancho
         }
 
         private void BanchoOnAuthenticated()
-        {
+		{
+			if (BanchoClient?.TcpClient == null)
+				return;
+
 			Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Authenticated with Bancho successfully");
 
             IsConnected = true;
 
-            MessageHandler.Start();
+            _connectionWatch = new ConnectionWatch(BanchoClient.TcpClient, MessageHandler);
+			_connectionWatch.OnConnectionLost += OnConnectionLost;
+            _connectionWatch.Start();
+
+			MessageHandler.Start();
 
             OnReady?.Invoke();
-        }
-    }
+		}
+
+		private async void OnConnectionLost()
+		{
+			IsConnected = false;
+
+			_cancellationTokenSource?.Cancel();
+
+			Logging.Logger.Log(Logging.LogLevel.Error, $"BanchoConnection: Connection lost, attempting to reconnect in {10} seconds...");
+
+			//OnConnectionError?.Invoke();
+
+			await Task.Delay(10 * 1000);
+
+			int connectionAttempts = 0;
+			while (connectionAttempts < 5)
+			{
+				Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Attempting to reconnect...");
+
+				_ = Task.Run(ConnectAsync);
+
+				await Task.Delay(10000);
+
+				// If we're back in action, IsConnected will be true
+				// we can safely exit due to a new watchdog being started
+				// so even if we lose connection again, we'll be able to
+				// reconnect.
+				if (IsConnected)
+				{
+					Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Reconnected successfully");
+
+					return;
+				}
+
+				Logging.Logger.Log(Logging.LogLevel.Error, $"BanchoConnection: Reconnection failed, retrying in {10} seconds...");
+
+				await Task.Delay(10 * 1000);
+
+				connectionAttempts++;
+			}
+
+			Logging.Logger.Log(Logging.LogLevel.Fatal, $"BanchoConnection: Failed to reconnect after {5} attempts, shutting down...");
+
+			DisconnectAsync().Wait(TimeSpan.FromSeconds(30));
+		}
+	}
 }
