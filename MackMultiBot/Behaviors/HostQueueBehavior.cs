@@ -151,6 +151,7 @@ namespace MackMultiBot.Behaviors
 			// Temporary and yucky, just want it here during testing
 			await using var dbContext = new BotDatabaseContext();
 			string formattedUsername = player.Name.ToIrcNameFormat();
+
 			if (dbContext.Users
 				.AsEnumerable() // Pulls data into memory
 				.FirstOrDefault(x => x.Name.ToIrcNameFormat() == formattedUsername) == null)

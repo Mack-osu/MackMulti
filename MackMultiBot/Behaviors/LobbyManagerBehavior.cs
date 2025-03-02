@@ -1,6 +1,8 @@
-﻿using BanchoSharp.Multiplayer;
+﻿using BanchoSharp.Interfaces;
+using BanchoSharp.Multiplayer;
 using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
+using MackMultiBot.Database.Databases;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
@@ -16,11 +18,34 @@ namespace MackMultiBot.Behaviors
 
 		#region Command Events
 
+		// Very ugly at the moment, but that's alright. Will rework once a timer system is in place.
 		[BotEvent(BotEventType.Command, "close")]
 		public async Task CloseLobby(CommandContext commandContext)
 		{
 			// Remove instance from lobby database
 			await using var databaseCtx = new BotDatabaseContext();
+
+			if (context?.Lobby?.MultiplayerLobby == null)
+			{
+				Logger.Log(LogLevel.Warn, "LobbyManagerBehavior: No lobby found during lobby closing sequence.");
+				return;
+			}
+
+			commandContext.Reply("!mp clearhost");
+			commandContext.Reply("!mp password v27B62yE6"); // Random letters :)
+			commandContext.Reply("Attention: Lobby will be closing in 30 seconds. Thank you for playing!");
+			await Task.Delay(20000);
+
+			commandContext.Reply("Attention: Lobby will be closing in 10 seconds. Thank you for playing!");
+			await Task.Delay(10000);
+
+			foreach (IMultiplayerPlayer player in context.Lobby.MultiplayerLobby.Players)
+			{
+				commandContext.Reply($"!mp kick {(player.Id != null ? player.Id : player.Name.ToIrcNameFormat())}");
+			}
+
+			await Task.Delay(10000);
+
 			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
 			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
 
