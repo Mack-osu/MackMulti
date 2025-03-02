@@ -34,6 +34,25 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"!mp start {result}");
 		}
 
+		[BotEvent(BotEventType.Command, "forcestart")]
+		public void OnForceStartCommand(CommandContext commandContext)
+		{
+			if (commandContext.Args.Length == 0)
+			{
+				commandContext.Reply($"!mp start");
+				return;
+			}
+
+			// Try to parse into start timer
+			if (!int.TryParse(commandContext.Args[0], out int result))
+			{
+				commandContext.Reply($"Invalid argument, usage: {commandContext.Command.Usage}");
+				return;
+			}
+
+			commandContext.Reply($"!mp start {result}");
+		}
+
 		[BotEvent(BotEventType.AllPlayersReady)]
 		public void OnAllPlayersReady()
 		{

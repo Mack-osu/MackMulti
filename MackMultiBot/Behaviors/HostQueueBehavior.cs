@@ -63,6 +63,15 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply(await GetQueueMessage());
 		}
 
+		[BotEvent(BotEventType.Command, "queueposition")]
+		public void OnQueuePositionCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player == null)
+				return;
+
+			commandContext.Reply($"{commandContext.Player.Name}, you are position {Data.Queue.IndexOf(commandContext.Player.Name) + 1} in queue.");
+		}
+
 		[BotEvent(BotEventType.Command, "sethost")]
 		public Task OnSetHostCommand(CommandContext commandContext)
 		{
@@ -78,6 +87,35 @@ namespace MackMultiBot.Behaviors
 			Data.Queue.Insert(0, user);
 			EnsureHost();
 			return Task.CompletedTask;
+		}
+
+		[BotEvent(BotEventType.Command, "setqueueposition")]
+		public void OnSetQueuePositionCommand(CommandContext commandContext)
+		{
+			if (commandContext.Args.Length > 2)
+			{
+				commandContext.Reply($"Invalid argument amount, usage: {commandContext.Command.Usage}");
+				return;
+			}
+
+			string? user = Data.Queue.FirstOrDefault(x => x.ToIrcNameFormat() == commandContext.Args[0].ToIrcNameFormat());
+
+			if (user == null)
+			{
+				commandContext.Reply($"Player '{commandContext.Args[0]}' could not be found.");
+				return;
+			}
+
+			if (!int.TryParse(commandContext.Args[1], out int result) || result < 1 || result > Data.Queue.Count)
+			{
+				commandContext.Reply($"Invalid queue position, usage: {commandContext.Command.Usage}");
+				return;
+			}
+
+			Data.Queue.Remove(user);
+			Data.Queue.Insert(result - 1, user);
+			EnsureHost();
+			return;
 		}
 
 		[BotEvent(BotEventType.Command, "forceskip")]

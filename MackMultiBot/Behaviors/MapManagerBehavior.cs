@@ -6,6 +6,8 @@ using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
 using MackMultiBot.Logging;
+using MackMultiBot.Database.Databases;
+using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
 {
@@ -47,6 +49,14 @@ namespace MackMultiBot.Behaviors
 									$" - {TimeSpan.FromSeconds(ruleConfig.MaximumMapLength):m\\:ss}");
 		}
 
+		[BotEvent(BotEventType.Command, "mirror")]
+		public void OnMirrorCommand(CommandContext commandContext)
+		{
+			int mapsetId = Data.BeatmapInfo.SetId;
+
+			commandContext.Reply($"[https://beatconnect.io/b/{mapsetId} BeatConnect] | [https://osu.direct/d/{mapsetId} osu.direct] - [https://catboy.best/d/{mapsetId} catboy.best]");
+		}
+
 		#endregion
 
 		#region Bot Events
@@ -79,7 +89,7 @@ namespace MackMultiBot.Behaviors
 					return;
 				}
 
-				if (!ValidateBeatmap(beatmapInfo, beatmapAttributes))
+				if (!await ValidateBeatmap(beatmapInfo, beatmapAttributes))
 				{
 					Logger.Log(LogLevel.Trace, "MapManagerBehavior: Invalid map chosen, reverting to latest valid pick");
 					ApplyBeatmap(Data.LastSetBeatmapId);
@@ -145,8 +155,20 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"!mp map {beatmapId.ToString()} 0");
 		}
 
-		bool ValidateBeatmap(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
+		async Task<bool> ValidateBeatmap(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
 		{
+			var hostQueueDataProvider = new BehaviorDataProvider<HostQueueBehaviorData>(context.Lobby);
+			string hostName = hostQueueDataProvider.Data.Queue[0];
+
+			await using var userDb = new UserDb();
+			var hostUser = await userDb.FindOrCreateUser(hostName);
+
+			if (hostUser.IsAdmin)
+			{
+				Logger.Log(LogLevel.Info, "MapManagerBehavior: Host is lobby admin, skipping beatmap validation");
+				return true;
+			}
+
 			using var dbContext = new BotDatabaseContext();
 			var lobbyRuleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
 

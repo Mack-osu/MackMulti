@@ -3,6 +3,7 @@ using MackMultiBot.Behaviors.Data;
 using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
+using MackMultiBot.Logging;
 
 namespace MackMultiBot.Behaviors
 {
@@ -13,6 +14,42 @@ namespace MackMultiBot.Behaviors
 
 		public async Task SaveData() => await _dataProvider.SaveData();
 
+		#region Command Events
+
+		[BotEvent(BotEventType.Command, "close")]
+		public async Task CloseLobby(CommandContext commandContext)
+		{
+			// Remove instance from lobby database
+			await using var databaseCtx = new BotDatabaseContext();
+			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+
+			await databaseCtx.SaveChangesAsync();
+
+			commandContext.Reply("!mp close");
+		}
+
+		[BotEvent(BotEventType.Command, "mplink")]
+		public void OnMpLinkCommand(CommandContext commandContext)
+		{
+			if (commandContext.Lobby?.MultiplayerLobby == null)
+			{
+				Logger.Log(LogLevel.Warn, "LobbyManagerBehavior: No lobby found while executing mplink command");
+				return;
+			}
+
+			commandContext.Reply($"Match history available [https://osu.ppy.sh/mp/{commandContext.Lobby.MultiplayerLobby.Id} here]");
+		}
+
+		[BotEvent(BotEventType.Command, "help")]
+		public void OnHelpCommand(CommandContext commandContext)
+		{
+			commandContext.Reply($"All available command can be found on [https://osu.ppy.sh/users/11584934 my profile]");
+		}
+
+		#endregion
+
+		#region Bancho Events
 
 		[BotEvent(BotEventType.Initialize)]
 		public async Task OnInitialize()
@@ -38,18 +75,9 @@ namespace MackMultiBot.Behaviors
 			EnsureMatchMods(lobbyConfig);
 		}
 
-		[BotEvent(BotEventType.Command, "close")]
-		public async Task CloseLobby(CommandContext commandContext)
-		{
-			// Remove instance from lobby database
-			await using var databaseCtx = new BotDatabaseContext();
-			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
-			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+		#endregion
 
-			await databaseCtx.SaveChangesAsync();
-
-			commandContext.Reply("!mp close");
-		}
+		#region Lobby Management
 
 		void EnsureRoomName(LobbyConfiguration configuration)
 		{
@@ -131,5 +159,7 @@ namespace MackMultiBot.Behaviors
 
 			return modsCommand;
 		}
+
+		#endregion
 	}
 }
