@@ -7,7 +7,6 @@ using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
 using MackMultiBot.Logging;
 using MackMultiBot.Database.Databases;
-using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
 {
@@ -54,7 +53,7 @@ namespace MackMultiBot.Behaviors
 		{
 			int mapsetId = Data.BeatmapInfo.SetId;
 
-			commandContext.Reply($"[https://beatconnect.io/b/{mapsetId} BeatConnect] | [https://osu.direct/d/{mapsetId} osu.direct] - [https://catboy.best/d/{mapsetId} catboy.best]");
+			commandContext.Reply($"[https://beatconnect.io/b/{mapsetId} BeatConnect] | [https://osu.direct/d/{mapsetId} osu.direct] | [https://catboy.best/d/{mapsetId} catboy.best]");
 		}
 
 		#endregion
@@ -72,6 +71,8 @@ namespace MackMultiBot.Behaviors
 			{
 				var beatmapInfo = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync(beatmapShell.Id));
 				var beatmapAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapShell.Id));
+
+				Logger.Log(LogLevel.Trace, $"MapManagerBehavior: BeatmapAttributes: {beatmapAttributes}");
 
 				if (beatmapInfo == null)
 				{
@@ -142,7 +143,7 @@ namespace MackMultiBot.Behaviors
 
 			context.SendMessage($"[https://osu.ppy.sh/b/{beatmapInfo.Id} {beatmapSet?.Artist} - {beatmapSet?.Title} [{beatmapInfo.Version}]] - [https://beatconnect.io/b/{beatmapInfo.Id} Beatconnect]");
 			context.SendMessage($"Star Rating: {roundedSr} | Length: {beatmapInfo.TotalLength:mm\\:ss} | BPM: {beatmapInfo.BPM} | {beatmapInfo.Status}");
-			context.SendMessage($"AR: {beatmapInfo.ApproachRate} | OD: {beatmapInfo.OverallDifficulty} | CS: {beatmapInfo.CircleSize} | HP: {beatmapInfo.CircleSize}");
+			context.SendMessage($"AR: {beatmapInfo.ApproachRate} | OD: {beatmapInfo.OverallDifficulty} | CS: {beatmapInfo.CircleSize} | HP: {beatmapInfo.HealthDrain}");
 		}
 
 		/// <summary>
@@ -152,7 +153,7 @@ namespace MackMultiBot.Behaviors
 		private void ApplyBeatmap(int beatmapId)
 		{
 			Data.LastSetBeatmapId = beatmapId;
-			context.SendMessage($"!mp map {beatmapId.ToString()} 0");
+			context.SendMessage($"!mp map {beatmapId} 0");
 		}
 
 		async Task<bool> ValidateBeatmap(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
@@ -186,8 +187,34 @@ namespace MackMultiBot.Behaviors
 
 				if (!isWithinSrRange)
 				{
-					context.SendMessage($"Selected beatmap is outside of difficulty range of the lobby: {lobbyRuleConfig.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
-					return false;
+					context.SendMessage("!mp settings");
+					await Task.Delay(1000);
+
+					List<string> mods = [];
+
+					if ((context.MultiplayerLobby.Mods & Mods.DoubleTime) != 0 || (context.MultiplayerLobby.Mods & Mods.Nightcore) != 0)
+						mods.Add("DT");
+					if ((context.MultiplayerLobby.Mods & Mods.HardRock) != 0)
+						mods.Add("HR");
+
+					DifficultyAttributes? dtDifficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapInfo.Id, mods.ToArray()));
+
+					if (dtDifficultyAttributes == null)
+					{
+						Logger.Log(LogLevel.Warn, $"MapManagerBehavior: Failed to get beatmap information for map {beatmapInfo.Id}");
+						context.SendMessage("Error while trying to get beatmap information, please try another one.");
+						ApplyBeatmap(Data.LastSetBeatmapId);
+						return false;
+					}
+
+					bool isWithinModdedSrRange = !(dtDifficultyAttributes.DifficultyRating > lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin)
+											&& !(dtDifficultyAttributes.DifficultyRating < lobbyRuleConfig.MinimumDifficulty);
+
+					if (!isWithinModdedSrRange)
+					{
+						context.SendMessage($"Selected beatmap ({difficultyAttributes.DifficultyRating}) is outside of difficulty range of the lobby: {lobbyRuleConfig.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
+						return false;
+					}
 				}
 			}
 
