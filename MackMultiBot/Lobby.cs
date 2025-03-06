@@ -28,6 +28,8 @@ namespace MackMultiBot
 
 		public int LobbyConfigurationId { get; set; }
 
+		public ITimerHandler? TimerHandler { get; private set; }
+
 		private string _channelId = string.Empty;
 
 		private bool _shouldCreateNewInstance;
@@ -168,6 +170,7 @@ namespace MackMultiBot
 
 			// Initialize behaviors
 			BehaviorEventProcessor = new(this);
+			TimerHandler = new TimerHandler(this);
 
 			BehaviorEventProcessor.RegisterBehavior("TestBehavior");
 			BehaviorEventProcessor.RegisterBehavior("HostQueueBehavior");
@@ -193,6 +196,7 @@ namespace MackMultiBot
 				await context.SaveChangesAsync();
 			}
 
+			await TimerHandler.Start();
 			await BehaviorEventProcessor.OnInitializeEvent();
 			_messager = new(BanchoConnection.MessageHandler, _channelId);
 			_messager.Start();

@@ -110,6 +110,8 @@ namespace MackMultiBot.Behaviors
 					StarRating = beatmapAttributes.DifficultyRating
 				};
 
+				await context.Lobby.BehaviorEventProcessor!.OnBehaviorEvent("NewMap");
+
 				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
 				SendBeatmapInfo(beatmapInfo, beatmapAttributes);
 			}

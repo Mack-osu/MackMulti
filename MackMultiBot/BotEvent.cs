@@ -19,6 +19,7 @@ namespace MackMultiBot
 		Initialize,
 		Command,
 		BehaviorEvent,
+		TimerReminder,
 		TimerFinished,
 
 		// Bancho Events

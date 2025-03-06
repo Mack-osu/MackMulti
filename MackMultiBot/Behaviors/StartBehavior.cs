@@ -1,16 +1,27 @@
 ﻿using MackMultiBot.Interfaces;
+using MackMultiBot.Logging;
+using ITimer = MackMultiBot.Interfaces.ITimer;
 
 namespace MackMultiBot.Behaviors
 {
-	public class StartBehavior(BehaviorEventContext context) : IBehavior
+	public class StartBehavior : IBehavior
 	{
+		private BehaviorEventContext _context;
+		private ITimer? _autoStartTimer;
+
+		public StartBehavior(BehaviorEventContext context)
+		{
+			_context = context;
+			_autoStartTimer = _context.Lobby.TimerHandler.FindOrCreateTimer("AutoStartTimer");
+		}
+
 		[BotEvent(BotEventType.Command, "start")]
 		public void OnStartCommand(CommandContext commandContext)
 		{
 			if (commandContext.Player == null)
 				return;
 
-			if (commandContext.Player.Name != context.Lobby?.MultiplayerLobby?.Host?.Name)
+			if (commandContext.Player.Name != _context.Lobby?.MultiplayerLobby?.Host?.Name)
 				return;
 
 			if (commandContext.Args.Length == 0)
@@ -31,7 +42,9 @@ namespace MackMultiBot.Behaviors
 				commandContext.Reply("Start timer must be below 60 seconds");
 				return;
 			}
-			commandContext.Reply($"!mp start {result}");
+
+			_autoStartTimer?.Start(TimeSpan.FromSeconds(result), result > 30 ? 10 : 0);
+			_context.SendMessage($"Match queued to start in {result} seconds, use !stop to abort");
 		}
 
 		[BotEvent(BotEventType.Command, "forcestart")]
@@ -39,6 +52,7 @@ namespace MackMultiBot.Behaviors
 		{
 			if (commandContext.Args.Length == 0)
 			{
+				_autoStartTimer?.Stop();
 				commandContext.Reply($"!mp start");
 				return;
 			}
@@ -53,11 +67,52 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"!mp start {result}");
 		}
 
+		[BotEvent(BotEventType.Command, "stop")]
+		public void OnStopCommandExecuted(CommandContext commandContext)
+		{
+			// Make sure the player is the host or an admin
+			if (!commandContext.User.IsAdmin)
+				if (commandContext.Player != commandContext.Lobby?.MultiplayerLobby?.Host)
+					return;
+
+			_autoStartTimer?.Stop();
+		}
+
 		[BotEvent(BotEventType.AllPlayersReady)]
 		public void OnAllPlayersReady()
 		{
-			context.SendMessage("All players ready, starting match");
-			context.SendMessage("!mp start");
+			_autoStartTimer?.Stop();
+			_context.SendMessage("All players ready, starting match");
+			_context.SendMessage("!mp start");
 		}
+
+		[BotEvent(BotEventType.BehaviorEvent, "NewMap")]
+		public void OnNewMap() => _autoStartTimer?.Start(TimeSpan.FromSeconds(90), 10);
+
+		[BotEvent(BotEventType.TimerFinished, "AutoStartTimer")]
+		public void OnAutoStartTimerElapsed()
+		{
+			if (_context.Lobby.MultiplayerLobby?.Players.Count == 0)
+			{
+				Logger.Log(LogLevel.Info, "StartBehavior: No players in lobby, ignoring autostart timer");
+				return;
+			}
+
+			_context.SendMessage("!mp start");
+		}
+
+		[BotEvent(BotEventType.TimerReminder, "AutoStartTimer")]
+		public void OnAutoStartTimerReminder() => _context.SendMessage("Match starting in 10 seconds, use !stop to abort");
+
+		private void AbortTimer() => _autoStartTimer?.Stop();
+
+		[BotEvent(BotEventType.MatchStarted)]
+		public void OnMatchStarted() => AbortTimer();
+
+		[BotEvent(BotEventType.HostChanged)]
+		public void OnHostChanged() => AbortTimer();
+
+		[BotEvent(BotEventType.HostChangingMap)]
+		public void OnHostChangingMap() => AbortTimer();
 	}
 }

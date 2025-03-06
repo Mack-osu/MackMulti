@@ -16,6 +16,7 @@ namespace MackMultiBot.Interfaces
 		public MultiplayerLobby? MultiplayerLobby { get; }
 		public int LobbyConfigurationId { get; set; }
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
+		public ITimerHandler? TimerHandler { get; }
 
 		public Task ConnectOrCreateAsync();
 

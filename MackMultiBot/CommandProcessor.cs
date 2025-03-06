@@ -151,7 +151,6 @@ namespace MackMultiBot
 				return;
 			}
 
-
 			// Admin Check
 			await using var userDb = new UserDb();
 			var user = await userDb.FindOrCreateUser(message.Sender);
@@ -173,13 +172,8 @@ namespace MackMultiBot
 				commandContext.Lobby = lobby;
 				commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
 
-				// If the player is in the lobby, retrieve the user from the database with that name instead
-				// because the IRC username may change spaces to underscores and crap, and I don't think
-				// there's a good way to handle that, since what if the name actually contains an "_"?
 				if (commandContext.Player?.Name != null)
-				{
-					commandContext.User = await userDb.FindOrCreateUser(commandContext.Player!.Name);
-				}
+					commandContext.User = await userDb.FindOrCreateUser(commandContext.Player.Name);
 
 				try
 				{

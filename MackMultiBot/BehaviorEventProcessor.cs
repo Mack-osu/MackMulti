@@ -5,6 +5,7 @@ using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
 using System.Reflection;
 using System.Threading.Channels;
+using ITimer = MackMultiBot.Interfaces.ITimer;
 
 namespace MackMultiBot
 {
@@ -140,6 +141,10 @@ namespace MackMultiBot
 		#endregion
 
 		#region Bot Events
+		public async Task OnBehaviorEvent(string name)
+		{
+			await ExecuteBotCallback(BotEventType.BehaviorEvent, name);
+		}
 
 		public async Task OnCommandExecuted(string command, CommandContext commandContext)
 		{
@@ -149,6 +154,16 @@ namespace MackMultiBot
 		public async Task OnInitializeEvent()
 		{
 			await ExecuteBotCallback(BotEventType.Initialize);
+		}
+
+		public async Task OnTimerReminderEvent(ITimer timer)
+		{
+			await ExecuteBotCallbackWithArgument(BotEventType.TimerReminder, timer.Name, timer);
+		}
+
+		public async Task OnTimerFinishedEvent(ITimer timer)
+		{
+			await ExecuteBotCallbackWithArgument(BotEventType.TimerFinished, timer.Name, timer);
 		}
 
 		async Task ExecuteBotCallback(BotEventType botEventType, object? param = null)
