@@ -12,7 +12,8 @@ namespace MackMultiBot.Behaviors.Data
 	{
 		public BeatmapInformation BeatmapInfo { get; set; } = new BeatmapInformation();
 
-		public int LastSetBeatmapId { get; set; }
+		public int LastValidBeatmapId { get; set; } = 975342;
+		public int LastBotAppliedBeatmapId { get; set; }
 
 		public DateTime LastMatchStartTime { get; set; } = DateTime.UtcNow;
 	}

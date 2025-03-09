@@ -64,56 +64,58 @@ namespace MackMultiBot.Behaviors
 		public async Task OnMapChanged(BeatmapShell beatmapShell)
 		{
 			// Prevents the bot from applying the same map repeatedly
-			if (beatmapShell.Id == Data.LastSetBeatmapId)
+			if (beatmapShell.Id == Data.LastBotAppliedBeatmapId)
 				return;
 
 			try
 			{
 				var beatmapInfo = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync(beatmapShell.Id));
-				var beatmapAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapShell.Id));
-
-				Logger.Log(LogLevel.Trace, $"MapManagerBehavior: BeatmapAttributes: {beatmapAttributes}");
+				var difficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapShell.Id));
 
 				if (beatmapInfo == null)
 				{
 					Logger.Log(LogLevel.Info, $"MapManagerBehavior: Invalid beatmap selected with id {beatmapShell.Id}");
 					context.SendMessage("Selected beatmap is not submitted, please try another one.");
-					ApplyBeatmap(Data.LastSetBeatmapId);
+					ApplyBeatmap(Data.LastValidBeatmapId);
 					return;
 				}
 
-				if (beatmapAttributes == null)
+				if (difficultyAttributes == null)
 				{
 					Logger.Log(LogLevel.Warn, $"MapManagerBehavior: Failed to get beatmap information for map {beatmapShell.Id}");
 					context.SendMessage("Error while trying to get beatmap information, please try another one.");
-					ApplyBeatmap(Data.LastSetBeatmapId);
+					ApplyBeatmap(Data.LastValidBeatmapId);
 					return;
 				}
 
-				if (!await ValidateBeatmap(beatmapInfo, beatmapAttributes))
+				// Map validation
+				using var dbContext = new BotDatabaseContext();
+				var lobbyRuleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
+				var beatmapValidator = new BeatmapValidator(context.Lobby, lobbyRuleConfig!);
+				var validationResult = await beatmapValidator.ValidateBeatmap(beatmapInfo, difficultyAttributes, (context.MultiplayerLobby.Mods & Mods.Freemod) != 0);
+
+				// DT?
+				if (validationResult == MapValidationResult.InvalidDifficulty && lobbyRuleConfig!.MinimumDifficulty > Math.Round(difficultyAttributes.DifficultyRating, 2))
 				{
-					Logger.Log(LogLevel.Trace, "MapManagerBehavior: Invalid map chosen, reverting to latest valid pick");
-					ApplyBeatmap(Data.LastSetBeatmapId);
-					return;
+					var dtDifficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapShell.Id, ["DT"])); 
+					
+					// Is map valid with DT?
+					if (dtDifficultyAttributes != null && await beatmapValidator.ValidateBeatmap(beatmapInfo, dtDifficultyAttributes, (context.MultiplayerLobby.Mods & Mods.Freemod) != 0) == MapValidationResult.Valid)
+					{
+						// Does room have DT selected?
+						context.SendMessage("!mp settings"); // Find a way to await execution of this
+						await Task.Delay(2500);
+
+						if ((context.MultiplayerLobby.Mods & Mods.DoubleTime) != 0)
+						{
+							await EnforceLobbyRules(beatmapInfo, dtDifficultyAttributes, MapValidationResult.Valid, lobbyRuleConfig, (int)Mods.DoubleTime);
+							return;
+						}
+					}
 				}
 
-				var beatmapSet = (beatmapInfo as Beatmap).Set;
-
-				Data.BeatmapInfo = new BeatmapInformation
-				{
-					Id = beatmapInfo.Id,
-					SetId = beatmapInfo.SetId,
-					Name = beatmapSet?.Title ?? string.Empty,
-					Artist = beatmapSet?.Artist ?? string.Empty,
-					Length = beatmapInfo.TotalLength,
-					DrainLength = beatmapInfo.HitLength,
-					StarRating = beatmapAttributes.DifficultyRating
-				};
-
-				await context.Lobby.BehaviorEventProcessor!.OnBehaviorEvent("NewMap");
-
-				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
-				SendBeatmapInfo(beatmapInfo, beatmapAttributes);
+				Logger.Log(LogLevel.Warn, validationResult.ToString());
+				await EnforceLobbyRules(beatmapInfo, difficultyAttributes, validationResult, lobbyRuleConfig!);
 			}
 			catch (HttpRequestException e)
 			{
@@ -152,98 +154,56 @@ namespace MackMultiBot.Behaviors
 		/// Applies the provided beatmap id to the lobby, will also set the last bot applied beatmap id,
 		/// so we don't end up in a loop of applying the same beatmap over and over.
 		/// </summary>
-		private void ApplyBeatmap(int beatmapId)
+		void ApplyBeatmap(int beatmapId)
 		{
-			Data.LastSetBeatmapId = beatmapId;
+			Data.LastBotAppliedBeatmapId = beatmapId;
 			context.SendMessage($"!mp map {beatmapId} 0");
 		}
 
-		async Task<bool> ValidateBeatmap(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes)
+		async Task EnforceLobbyRules(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes, MapValidationResult validationResult, LobbyRuleConfiguration lobbyRuleConfig, int mods = 0)
 		{
-			var hostQueueDataProvider = new BehaviorDataProvider<HostQueueBehaviorData>(context.Lobby);
-			string hostName = hostQueueDataProvider.Data.Queue[0];
+			var lobbyConfig = await context.Lobby.GetLobbyConfiguration();
+			var beatmapSet = (beatmapInfo as Beatmap).Set;
 
-			await using var userDb = new UserDb();
-			var hostUser = await userDb.FindOrCreateUser(hostName);
+			Logger.Log(LogLevel.Trace, $"MapManagerBehavior: Enforcing beatmap regulations for map {beatmapInfo.Id}, status: {validationResult}");
 
-			if (hostUser.IsAdmin)
+			if (validationResult == MapValidationResult.Valid)
 			{
-				Logger.Log(LogLevel.Info, "MapManagerBehavior: Host is lobby admin, skipping beatmap validation");
-				return true;
-			}
-
-			using var dbContext = new BotDatabaseContext();
-			var lobbyRuleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
-
-			if (lobbyRuleConfig == null)
-			{
-				Logger.Log(LogLevel.Warn, "MapManagerBehavior: Lobby does not have a rule configuration. Map is valid by default");
-				return true;
-			}
-
-			// Validate Star Rating
-			if (lobbyRuleConfig.LimitDifficulty)
-			{
-				bool isWithinSrRange = !(difficultyAttributes.DifficultyRating > lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin) 
-										&& !(difficultyAttributes.DifficultyRating < lobbyRuleConfig.MinimumDifficulty);
-
-				if (!isWithinSrRange)
+				Data.BeatmapInfo = new BeatmapInformation
 				{
-					context.SendMessage("!mp settings");
-					await Task.Delay(1000);
+					Id = beatmapInfo.Id,
+					SetId = beatmapInfo.SetId,
+					Name = beatmapSet?.Title ?? string.Empty,
+					Artist = beatmapSet?.Artist ?? string.Empty,
+					Length = beatmapInfo.TotalLength,
+					DrainLength = beatmapInfo.HitLength,
+					StarRating = difficultyAttributes.DifficultyRating
+				};
 
-					List<string> mods = [];
+				Data.LastValidBeatmapId = Data.BeatmapInfo.Id;
 
-					if ((context.MultiplayerLobby.Mods & Mods.DoubleTime) != 0 || (context.MultiplayerLobby.Mods & Mods.Nightcore) != 0)
-						mods.Add("DT");
-					if ((context.MultiplayerLobby.Mods & Mods.HardRock) != 0)
-						mods.Add("HR");
+				await context.Lobby.BehaviorEventProcessor!.OnBehaviorEvent("NewMap");
 
-					DifficultyAttributes? dtDifficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(beatmapInfo.Id, mods.ToArray()));
+				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
 
-					if (dtDifficultyAttributes == null)
-					{
-						Logger.Log(LogLevel.Warn, $"MapManagerBehavior: Failed to get beatmap information for map {beatmapInfo.Id}");
-						context.SendMessage("Error while trying to get beatmap information, please try another one.");
-						ApplyBeatmap(Data.LastSetBeatmapId);
-						return false;
-					}
-
-					bool isWithinModdedSrRange = !(dtDifficultyAttributes.DifficultyRating > lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin)
-											&& !(dtDifficultyAttributes.DifficultyRating < lobbyRuleConfig.MinimumDifficulty);
-
-					if (!isWithinModdedSrRange)
-					{
-						context.SendMessage($"Selected beatmap ({difficultyAttributes.DifficultyRating}) is outside of difficulty range of the lobby: {lobbyRuleConfig.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
-						return false;
-					}
-				}
+				SendBeatmapInfo(beatmapInfo, difficultyAttributes);
+				return;
 			}
 
-			// Validate Map Length
-			if (lobbyRuleConfig.LimitMapLength)
-			{
-				//bool isWithinLengthRange = !(beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfig.MaximumMapLength)
-				//							&& !(beatmapInfo.TotalLength.TotalSeconds < lobbyRuleConfig.MinimumMapLength);
+			ApplyBeatmap(Data.LastValidBeatmapId);
 
-				if (beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfig.MaximumMapLength)
-				{
-					context.SendMessage($"Selected beatmap is too long for this lobby: " +
-						$"{TimeSpan.FromSeconds(lobbyRuleConfig.MinimumMapLength):m\\:ss}" +
+			switch (validationResult)
+			{
+				case MapValidationResult.InvalidDifficulty:
+					context.SendMessage($"Selected beatmap ({difficultyAttributes.DifficultyRating}) is outside of difficulty range of the lobby: {lobbyRuleConfig!.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
+					return;
+
+				case MapValidationResult.InvalidMapLength:
+					context.SendMessage($"Selected beatmap ({beatmapInfo.TotalLength:m\\:ss}) is outside length range of the lobby: " +
+						$"{TimeSpan.FromSeconds(lobbyRuleConfig!.MinimumMapLength):m\\:ss}" +
 						$" - {TimeSpan.FromSeconds(lobbyRuleConfig.MaximumMapLength):m\\:ss}");
-					return false;
-				}
-
-				if (beatmapInfo.TotalLength.TotalSeconds < lobbyRuleConfig.MinimumMapLength)
-				{
-					context.SendMessage($"Selected beatmap is too short for this lobby: " +
-						$"{TimeSpan.FromSeconds(lobbyRuleConfig.MinimumMapLength):m\\:ss}" +
-						$" - {TimeSpan.FromSeconds(lobbyRuleConfig.MaximumMapLength):m\\:ss}");
-					return false;
-				}
+					return;
 			}
-
-			return true;
 		}
 
 		#endregion

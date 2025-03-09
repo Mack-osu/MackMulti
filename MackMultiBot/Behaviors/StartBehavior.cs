@@ -78,6 +78,17 @@ namespace MackMultiBot.Behaviors
 			_autoStartTimer?.Stop();
 		}
 
+		[BotEvent(BotEventType.Command, "abort")]
+		public void OnAbortCommandExecuted(CommandContext commandContext)
+		{
+			// Make sure the player is the host or an admin
+			if (!commandContext.User.IsAdmin)
+				if (commandContext.Player != commandContext.Lobby?.MultiplayerLobby?.Host)
+					return;
+
+			commandContext.Reply("!mp abort");
+		}
+
 		[BotEvent(BotEventType.AllPlayersReady)]
 		public void OnAllPlayersReady()
 		{

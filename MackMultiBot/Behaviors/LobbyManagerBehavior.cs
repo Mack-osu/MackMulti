@@ -41,7 +41,7 @@ namespace MackMultiBot.Behaviors
 
 			foreach (IMultiplayerPlayer player in context.Lobby.MultiplayerLobby.Players)
 			{
-				commandContext.Reply($"!mp kick {(player.Id != null ? player.Id : player.Name.ToIrcNameFormat())}");
+				commandContext.Reply($"!mp kick {(player.Id != null ? "#" + player.Id : player.Name.ToIrcNameFormat())}");
 			}
 
 			await Task.Delay(10000);
