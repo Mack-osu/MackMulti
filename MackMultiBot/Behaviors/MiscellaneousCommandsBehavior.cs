@@ -67,6 +67,8 @@ namespace MackMultiBot.Behaviors
 		{
 			var userDb = new UserDb();
 
+			// Perhaps an optional parameter to get user at a certain spot?
+
 			var playTimeTop4 = await userDb.GetTopUsersByPlayTime(4);
 
 			commandContext.Reply($"#1: {playTimeTop4[1].Name} with {TimeSpan.FromSeconds(playTimeTop4[1].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
