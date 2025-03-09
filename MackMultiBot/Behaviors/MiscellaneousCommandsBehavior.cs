@@ -10,6 +10,10 @@ using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
 using MackMultiBot.OsuData.Extensions;
 using OsuSharp.Enums;
+using OsuSharp.Models.Scores;
+using OsuSharp.Models.Users;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
 {
@@ -22,8 +26,27 @@ namespace MackMultiBot.Behaviors
 		#region Command Events
 
 		[BotEvent(BotEventType.Command, "playtime")]
-		public void OnPlaytimeCommand(CommandContext commandContext)
+		public async void OnPlaytimeCommand(CommandContext commandContext)
 		{
+			var userDb = new UserDb();
+
+			// external player
+			if (commandContext.Args.Length > 0)
+			{
+				var user = userDb.FindUser(commandContext.Args[0]);
+
+				if (user == null)
+				{
+					commandContext.Reply($"User '{commandContext.Args[0]}' not found.");
+					return;
+				}
+
+				var playTime = TimeSpan.FromSeconds(user.Playtime);
+
+				commandContext.Reply($"{user.Name} has played for {playTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}. They are ranked #{await userDb.GetUserPlaytimeSpot(user.Name)} in total playtime.");
+				return;
+			}
+
 			var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == commandContext.Player?.Name);
 			var totalPlaytime = TimeSpan.FromSeconds(commandContext.User.Playtime);
 			var currentPlaytime = TimeSpan.FromSeconds(0);
@@ -35,7 +58,22 @@ namespace MackMultiBot.Behaviors
 			}
 
 			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} " +
-								$"({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} ({totalPlaytime.TotalHours:F0}h) in total).");
+								$"({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} ({totalPlaytime.TotalHours:F0}h) in total). " +
+								$"They are ranked #{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)} in total playtime.");
+		}
+
+		[BotEvent(BotEventType.Command, "playtimetop")]
+		public async Task OnPlaytimeTopCommand(CommandContext commandContext)
+		{
+			var userDb = new UserDb();
+
+			var playTimeTop4 = await userDb.GetTopUsersByPlayTime(4);
+
+			commandContext.Reply($"#1: {playTimeTop4[1].Name} with {TimeSpan.FromSeconds(playTimeTop4[1].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#2: {playTimeTop4[2].Name} with {TimeSpan.FromSeconds(playTimeTop4[2].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#3: {playTimeTop4[3].Name} with {TimeSpan.FromSeconds(playTimeTop4[3].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}");
+
+			Logger.Log(LogLevel.Error, "EVEN MORE");
 		}
 
 		[BotEvent(BotEventType.Command, "playcount")]
@@ -54,13 +92,52 @@ namespace MackMultiBot.Behaviors
 			var mapManagerDataProvider = new BehaviorDataProvider<MapManagerBehaviorData>(context.Lobby);
 			BeatmapInformation mapInfo = mapManagerDataProvider.Data.BeatmapInfo;
 
-			var bestScore = (await scoreDb.GetMapScoresOfUser(mapInfo.Id, commandContext.Player.Id.Value))?.MaxBy(x => x.TotalScore);
+			var bestScore = (await scoreDb.GetMapScoresOfUserAsync(mapInfo.Id, commandContext.Player.Id.Value))?.MaxBy(x => x.TotalScore);
 
 			commandContext.Reply(bestScore != null ?
-				$"{commandContext.Player.Name}'s best score on [https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] is a {bestScore.GetAccuracy():0.00}% {bestScore.Rank} rank with {bestScore.MaxCombo}x combo, {bestScore.Count300}/{bestScore.Count100}/{bestScore.Count50}/{bestScore.CountMiss}."
+				$"{commandContext.Player.Name}'s best score on [https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] is a " +
+				$"{bestScore.GetAccuracy():0.00}% {bestScore.Rank} rank with {bestScore.MaxCombo}x combo, " +
+				$"{bestScore.Count300}/{bestScore.Count100}/{bestScore.Count50}/{bestScore.CountMiss} played " +
+				$"{bestScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}."
 				: $"{commandContext.Player.Name}, you have not played this map in this lobby yet.");
 
 			// TODO: Add PP calculations, probably want to store these in the score database save
+		}
+
+		[BotEvent(BotEventType.Command, "mapstats")]
+		public async Task OnMapStatsCommand(CommandContext commandContext)
+		{
+			// [MapName] has been picked _ times. [User] holds the top score and it was last played _ ago
+
+			await using var scoreDb = new ScoreDb();
+			await using var matchDb = new MatchDb();
+			await using var userDb = new UserDb();
+			var mapManagerDataProvider = new BehaviorDataProvider<MapManagerBehaviorData>(context.Lobby);
+			BeatmapInformation mapInfo = mapManagerDataProvider.Data.BeatmapInfo;
+
+			var pickCount = await matchDb.GetMatchCountByMapIdAsync(mapInfo.Id);
+			var lastScore = await matchDb.GetLastPlayedByMapIdAsync(mapInfo.Id);
+			var bestScore = await scoreDb.GetBestMapScoreAsync(mapInfo.Id);
+
+			string finalMessage = $"[https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] has been picked {pickCount} times";
+
+
+			if (lastScore != null)
+				finalMessage += $" and it was last played {lastScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}.";
+
+			if (bestScore != null)
+			{
+				var bestScoreUser = userDb.GetUserFromDbIndex(bestScore.UserId);
+
+				if (bestScoreUser != null)
+				{
+					finalMessage += $" [https://osu.ppy.sh/users/@{bestScoreUser.Name.ToIrcNameFormat()} {bestScoreUser.Name}] holds this lobby's top score with a " +
+						$"{bestScore.GetAccuracy():0.00}% {bestScore.Rank} rank with {bestScore.MaxCombo}x combo, " +
+						$"{bestScore.Count300}/{bestScore.Count100}/{bestScore.Count50}/{bestScore.CountMiss}";
+				}
+			}
+
+			commandContext.Reply(finalMessage);
 		}
 
 		[BotEvent(BotEventType.Command, "recentscore")]
@@ -71,7 +148,7 @@ namespace MackMultiBot.Behaviors
 
 			await using var scoreDb = new ScoreDb();
 
-			var latestScore = (await scoreDb.GetScoresOfUser(commandContext.Player.Id.Value))?.FirstOrDefault();
+			var latestScore = (await scoreDb.GetScoresOfUserAsync(commandContext.Player.Id.Value))?.FirstOrDefault();
 
 			if (latestScore == null)
 			{
@@ -217,7 +294,7 @@ namespace MackMultiBot.Behaviors
 
 					var user = await userDb.FindOrCreateUser(result.Player.Name);
 
-					await scoreDb.AddAsync(new Score
+					await scoreDb.AddAsync(new Database.Entities.Score
 					{
 						UserId = user.Id,
 						PlayerId = result.Player.Id,

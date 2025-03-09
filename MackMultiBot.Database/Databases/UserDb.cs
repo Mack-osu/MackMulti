@@ -1,5 +1,6 @@
 ﻿using MackMultiBot.Database.Entities;
 using MackMultiBot.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace MackMultiBot.Database.Databases
 {
@@ -10,12 +11,29 @@ namespace MackMultiBot.Database.Databases
 			return FindUser(username) ?? await CreateUser(username);
 		}
 
-		User? FindUser(string username)
+		public User? GetUserFromDbIndex(int index)
+		{
+			return _dbContext.Users.FirstOrDefault(x => x.Id == index);
+		}
+
+		public User? FindUser(string username)
 		{
 			string formattedUsername = username.ToIrcNameFormat();
 			return _dbContext.Users
 				.AsEnumerable() // Pulls data into memory
 				.FirstOrDefault(x => x.Name.ToIrcNameFormat() == formattedUsername);
+		}
+
+		public async Task<IReadOnlyList<User>> GetTopUsersByPlayTime(int count)
+		{
+			return await _dbContext.Users.OrderByDescending(x => x.Playtime).
+				Take(count).
+				ToListAsync();
+		}
+
+		public async Task<int> GetUserPlaytimeSpot(string username)
+		{
+			return (await _dbContext.Users.OrderByDescending(x => x.Playtime).ToListAsync()).FindIndex(x => x.Name.ToIrcNameFormat() == username.ToIrcNameFormat());
 		}
 
 		async Task<User> CreateUser(string username)

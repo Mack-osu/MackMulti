@@ -20,7 +20,7 @@ namespace MackMultiBot.Database.Databases
 		/// <param name="mapId">The osu! Beatmap ID of the map</param>
 		/// <param name="playerId">The osu! User ID of the player.</param>
 		/// <returns>A list of scores, sorted by recency</returns>
-		public async Task<List<Score>?> GetMapScoresOfUser(int mapId, int playerId)
+		public async Task<List<Score>?> GetMapScoresOfUserAsync(int mapId, int playerId)
 		{
 			return await _dbContext.Scores.
 				Where(x => x.BeatmapId == mapId && x.PlayerId == playerId).
@@ -33,12 +33,20 @@ namespace MackMultiBot.Database.Databases
 		/// </summary>
 		/// <param name="playerId">The osu! User ID of the player.</param>
 		/// <returns>A list of scores, sorted by recency.</returns>
-		public async Task<List<Score>?> GetScoresOfUser(int playerId)
+		public async Task<List<Score>?> GetScoresOfUserAsync(int playerId)
 		{
 			return await _dbContext.Scores.
 				Where(x => x.PlayerId == playerId).
 				OrderByDescending(x => x.Time).
 				ToListAsync();
+		}
+
+		public async Task<Score?> GetBestMapScoreAsync(int beatmapId)
+		{
+			return await _dbContext.Scores.
+				Where(x => x.BeatmapId == beatmapId).
+				OrderByDescending(x => x.TotalScore).
+				FirstOrDefaultAsync();
 		}
 	}
 }
