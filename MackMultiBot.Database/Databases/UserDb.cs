@@ -31,9 +31,32 @@ namespace MackMultiBot.Database.Databases
 				ToListAsync();
 		}
 
+		public async Task<IReadOnlyList<User>> GetTopUsersByPlayCount(int count)
+		{
+			return await _dbContext.Users.OrderByDescending(x => x.Playcount).
+				Take(count).
+				ToListAsync();
+		}
+		public async Task<IReadOnlyList<User>> GetTopUsersByMatchWins(int count)
+		{
+			return await _dbContext.Users.OrderByDescending(x => x.MatchWins).
+				Take(count).
+				ToListAsync();
+		}
+
 		public async Task<int> GetUserPlaytimeSpot(string username)
 		{
 			return (await _dbContext.Users.OrderByDescending(x => x.Playtime).ToListAsync()).FindIndex(x => x.Name.ToIrcNameFormat() == username.ToIrcNameFormat());
+		}
+
+		public async Task<int> GetUserMatchWinsSpot(string username)
+		{
+			return (await _dbContext.Users.OrderByDescending(x => x.MatchWins).ToListAsync()).FindIndex(x => x.Name.ToIrcNameFormat() == username.ToIrcNameFormat());
+		}
+
+		public async Task<int> GetUserPlaycountSpot(string username)
+		{
+			return (await _dbContext.Users.OrderByDescending(x => x.Playcount).ToListAsync()).FindIndex(x => x.Name.ToIrcNameFormat() == username.ToIrcNameFormat());
 		}
 
 		async Task<User> CreateUser(string username)

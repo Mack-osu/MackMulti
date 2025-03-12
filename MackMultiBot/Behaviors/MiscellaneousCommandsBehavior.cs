@@ -43,7 +43,7 @@ namespace MackMultiBot.Behaviors
 
 				var playTime = TimeSpan.FromSeconds(user.Playtime);
 
-				commandContext.Reply($"{user.Name} has played for {playTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}. They are ranked #{await userDb.GetUserPlaytimeSpot(user.Name)} in total playtime.");
+				commandContext.Reply($"{user.Name} has played for {playTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} (#{await userDb.GetUserPlaytimeSpot(user.Name)}).");
 				return;
 			}
 
@@ -57,9 +57,8 @@ namespace MackMultiBot.Behaviors
 				totalPlaytime += currentPlaytime;
 			}
 
-			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} " +
-								$"({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} ({totalPlaytime.TotalHours:F0}h) in total). " +
-								$"They are ranked #{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)} in total playtime.");
+			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
+								$", {totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)}).");
 		}
 
 		[BotEvent(BotEventType.Command, "playtimetop")]
@@ -71,17 +70,60 @@ namespace MackMultiBot.Behaviors
 
 			var playTimeTop4 = await userDb.GetTopUsersByPlayTime(4);
 
-			commandContext.Reply($"#1: {playTimeTop4[1].Name} with {TimeSpan.FromSeconds(playTimeTop4[1].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#2: {playTimeTop4[2].Name} with {TimeSpan.FromSeconds(playTimeTop4[2].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#3: {playTimeTop4[3].Name} with {TimeSpan.FromSeconds(playTimeTop4[3].Playtime).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}");
+			Dictionary<string, int> users = [];
 
-			Logger.Log(LogLevel.Error, "EVEN MORE");
+			for (int i = 1; i < playTimeTop4.Count; i++)
+			{
+				var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == playTimeTop4[i].Name);
+				users.Add(playTimeTop4[i].Name, record == null ? playTimeTop4[i].Playtime : playTimeTop4[i].Playtime + (int)(DateTime.UtcNow - record.JoinTime).TotalSeconds);
+			}
+
+			commandContext.Reply($"#1: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#2: {users.ElementAt(2).Key} with {TimeSpan.FromSeconds(users.ElementAt(2).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#3: {users.ElementAt(3).Key} with {TimeSpan.FromSeconds(users.ElementAt(3).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}.");
+		}
+
+		[BotEvent(BotEventType.Command, "playcounttop")]
+		public async Task OnPlaycountTopCommand(CommandContext commandContext)
+		{
+			var userDb = new UserDb();
+
+			// Perhaps an optional parameter to get user at a certain spot?
+
+			var playcountTop3 = await userDb.GetTopUsersByPlayCount(3);
+
+			commandContext.Reply($"#1: {playcountTop3[0].Name} with {TimeSpan.FromSeconds(playcountTop3[0].Playcount)} matches | " +
+								$"#2: {playcountTop3[1].Name} with {TimeSpan.FromSeconds(playcountTop3[1].Playcount)} matches | " +
+								$"#3: {playcountTop3[2].Name} with {TimeSpan.FromSeconds(playcountTop3[2].Playcount)} matches.");
+		}
+
+		[BotEvent(BotEventType.Command, "matchwinstop")]
+		public async Task OnMatchWinsTopCommand(CommandContext commandContext)
+		{
+			var userDb = new UserDb();
+
+			// Perhaps an optional parameter to get user at a certain spot?
+
+			var playcountTop3 = await userDb.GetTopUsersByMatchWins(3);
+
+			commandContext.Reply($"#1: {playcountTop3[0].Name} with {TimeSpan.FromSeconds(playcountTop3[0].MatchWins)} wins | " +
+								$"#2: {playcountTop3[1].Name} with {TimeSpan.FromSeconds(playcountTop3[1].MatchWins)} wins | " +
+								$"#3: {playcountTop3[2].Name} with {TimeSpan.FromSeconds(playcountTop3[2].MatchWins)} wins.");
 		}
 
 		[BotEvent(BotEventType.Command, "playcount")]
-		public void OnPlaycountCommand(CommandContext commandContext)
+		public async Task OnPlaycountCommand(CommandContext commandContext)
 		{
-			commandContext.Reply($"{commandContext.Player?.Name} has played a total of {commandContext.User.Playcount} matches, with {commandContext.User.MatchWins} wins!");
+			if (commandContext.Player?.Name == null)
+				return;
+
+			var userDb = new UserDb();
+
+			int? playcountRanking = await userDb.GetUserPlaycountSpot(commandContext.Player.Name);
+			int? matchWinsRanking = await userDb.GetUserMatchWinsSpot(commandContext.Player.Name);
+
+			commandContext.Reply($"{commandContext.Player?.Name} has played a total of {commandContext.User.Playcount} matches (#{playcountRanking.ToString() ?? "unknown"}), " +
+				$"with {commandContext.User.MatchWins} wins ((#{matchWinsRanking.ToString() ?? "unknown"})).");
 		}
 
 		[BotEvent(BotEventType.Command, "bestmapscore")]
@@ -125,7 +167,7 @@ namespace MackMultiBot.Behaviors
 
 
 			if (lastScore != null)
-				finalMessage += $" and it was last played {lastScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}.";
+				finalMessage += $" it was last played {lastScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}.";
 
 			if (bestScore != null)
 			{

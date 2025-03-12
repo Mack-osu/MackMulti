@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace MackMultiBot.Commands
 {
-	public class PlayTimeTop : ICommand
+	public class MatchWinsTopCommand : ICommand
 	{
-		public string Command => "playtimetop";
+		public string Command => "matchwinstop";
 
-		public string[]? Aliases => ["pttop", "toppt", "playtimetop", "topplaytime"];
+		public string[]? Aliases => ["wintop", "winstop", "mwtop", "topwins", "topmw", "wtop"];
 
 		public int MinimumArguments => 0;
 
