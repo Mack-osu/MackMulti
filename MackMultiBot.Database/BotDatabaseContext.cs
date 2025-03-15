@@ -5,11 +5,8 @@ namespace MackMultiBot.Database
 {
 	public class BotDatabaseContext : DbContext
 	{
-		string ConnectionString { get; set; } = "Data Source=E:/Coding/MackMulti/MackMultiBot/MackMultiBot.Database/data.db";
-
+		public static string? ConnectionString;
 		public DbSet<LobbyInstance> LobbyInstances => Set<LobbyInstance>();
-		public DbSet<LobbyConfiguration> LobbyConfigurations => Set<LobbyConfiguration>();
-		public DbSet<LobbyRuleConfiguration> LobbyRuleConfigurations => Set<LobbyRuleConfiguration>();
 		public DbSet<User> Users => Set<User>();
 		public DbSet<LobbyBehaviorData> LobbyBehaviorData => Set<LobbyBehaviorData>();
 		public DbSet<PlayedMap> PlayedMaps => Set<PlayedMap>();
@@ -17,6 +14,9 @@ namespace MackMultiBot.Database
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
+			if (ConnectionString == null)
+				throw new InvalidOperationException("No connection string set");
+
 			optionsBuilder.UseSqlite(ConnectionString);
 		}
 	}

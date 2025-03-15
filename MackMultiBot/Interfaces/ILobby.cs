@@ -14,16 +14,12 @@ namespace MackMultiBot.Interfaces
 		public Bot Bot { get; init; }
 		public BanchoConnection BanchoConnection { get; }
 		public MultiplayerLobby? MultiplayerLobby { get; }
-		public int LobbyConfigurationId { get; set; }
+		public string LobbyIdentifier { get; set; }
+		public LobbyConfiguration LobbyConfiguration { get; }
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
 		public ITimerHandler? TimerHandler { get; }
 
 		public Task ConnectOrCreateAsync();
-
-		/// <summary>
-		/// Get Lobby configuration from database
-		/// </summary>
-		public Task<LobbyConfiguration> GetLobbyConfiguration();
 
 	}
 }

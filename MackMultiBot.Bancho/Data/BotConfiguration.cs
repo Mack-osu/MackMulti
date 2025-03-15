@@ -9,18 +9,25 @@ namespace MackMultiBot.Bancho.Data
 {
 	public class BotConfiguration
 	{
-		/// <summary>
-		/// osu! IRC username, obtained from https://osu.ppy.sh/home/account/edit#legacy-api
-		/// </summary>
-		public string Username { get; init; } = Environment.GetEnvironmentVariable("IRCUSER");
-
-        /// <summary>
-        /// osu! IRC password, obtained from https://osu.ppy.sh/home/account/edit#legacy-api
-        /// </summary>
-        public string Password { get; init; } = Environment.GetEnvironmentVariable("IRCPASS");
-
-		//http://localhost:4000
-		public string OsuApiClientId { get; init; } = Environment.GetEnvironmentVariable("APIID");
-		public string OsuApiClientSecret { get; init; } = Environment.GetEnvironmentVariable("APISECRET");
+		public string IrcUsername { get; set; } = string.Empty;
+		public string IrcPassword { get; set; } = string.Empty;
+		public string ApiClientId { get; set; } = string.Empty;
+		public string ApiClientSecret { get; set; } = string.Empty;
+		public string DatabaseDirectory { get; set; } = string.Empty;
+		public string LobbyName { get; set; } = string.Empty;
+		public string LobbyIdentifier { get; set; } = string.Empty;
+		public int Mode { get; set; }
+		public int TeamMode { get; set; }
+		public int ScoreMode { get; set; }
+		public string[] Mods { get; set; } = [];
+		public int Size { get; set; }
+		public string Password { get; set; } = string.Empty;
+		public bool LimitDifficulty { get; set; }
+		public bool LimitMapLength { get; set; }
+		public float MinimumDifficulty { get; set; }
+		public float MaximumDifficulty { get; set; }
+		public float DifficultyMargin { get; set; }
+		public int MinimumMapLength { get; set; }
+		public int MaximumMapLength { get; set; }
 	}
 }

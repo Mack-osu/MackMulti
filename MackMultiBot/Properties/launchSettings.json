@@ -1,13 +1,7 @@
 {
   "profiles": {
     "MackMultiBot": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "IRCUSER": "[_Mack_]",
-        "IRCPASS": "d7195ae5",
-        "APIID": "37662",
-        "APISECRET": "nZ9aiTj7kDtynzkm0goERoqQ3kNIFlqdGfQOjTB6"
-      }
+      "commandName": "Project"
     }
   }
 }

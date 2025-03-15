@@ -32,14 +32,16 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "rules")]
 		public void OnRulesCommand(CommandContext commandContext)
 		{
-			using var dbContext = new BotDatabaseContext();
-			LobbyRuleConfiguration? ruleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
+			var ruleConfig = commandContext.Lobby?.LobbyConfiguration.RuleConfig;
 
 			if (ruleConfig == null)
 			{
 				commandContext.Reply("This lobby has no rule configuration set up.");
 				return;
 			}
+			Console.WriteLine(ruleConfig.LimitDifficulty);
+			Console.WriteLine(ruleConfig.LimitMapLength);
+
 			if (ruleConfig.LimitDifficulty)
 				commandContext.Reply($"Difficulty: {ruleConfig.MinimumDifficulty:0.00}* - {ruleConfig.MaximumDifficulty + ruleConfig.DifficultyMargin:0.00}*");
 
@@ -90,7 +92,7 @@ namespace MackMultiBot.Behaviors
 
 				// Map validation
 				using var dbContext = new BotDatabaseContext();
-				var lobbyRuleConfig = dbContext.LobbyRuleConfigurations.FirstOrDefault(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId);
+				var lobbyRuleConfig = context.Lobby.LobbyConfiguration.RuleConfig;
 				var beatmapValidator = new BeatmapValidator(context.Lobby, lobbyRuleConfig!);
 				var validationResult = await beatmapValidator.ValidateBeatmap(beatmapInfo, difficultyAttributes, (context.MultiplayerLobby.Mods & Mods.Freemod) != 0);
 
@@ -162,7 +164,6 @@ namespace MackMultiBot.Behaviors
 
 		async Task EnforceLobbyRules(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes, MapValidationResult validationResult, LobbyRuleConfiguration lobbyRuleConfig, int mods = 0)
 		{
-			var lobbyConfig = await context.Lobby.GetLobbyConfiguration();
 			var beatmapSet = (beatmapInfo as Beatmap).Set;
 
 			Logger.Log(LogLevel.Trace, $"MapManagerBehavior: Enforcing beatmap regulations for map {beatmapInfo.Id}, status: {validationResult}");
@@ -195,7 +196,7 @@ namespace MackMultiBot.Behaviors
 			switch (validationResult)
 			{
 				case MapValidationResult.InvalidDifficulty:
-					context.SendMessage($"Selected beatmap ({difficultyAttributes.DifficultyRating}) is outside of difficulty range of the lobby: {lobbyRuleConfig!.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
+					context.SendMessage($"Selected beatmap ({Math.Round(difficultyAttributes.DifficultyRating, 2)}*) is outside of difficulty range of the lobby: {lobbyRuleConfig!.MinimumDifficulty:0.00}* - {(lobbyRuleConfig.MaximumDifficulty + lobbyRuleConfig.DifficultyMargin):0.00}*");
 					return;
 
 				case MapValidationResult.InvalidMapLength:

@@ -25,6 +25,8 @@ namespace MackMultiBot.Behaviors
 
 		#region Command Events
 
+			#region Player Stats
+
 		[BotEvent(BotEventType.Command, "playtime")]
 		public async void OnPlaytimeCommand(CommandContext commandContext)
 		{
@@ -58,7 +60,22 @@ namespace MackMultiBot.Behaviors
 			}
 
 			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
-								$", {totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)}).");
+								$", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)})).");
+		}
+
+		[BotEvent(BotEventType.Command, "playcount")]
+		public async Task OnPlaycountCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player?.Name == null)
+				return;
+
+			var userDb = new UserDb();
+
+			int? playcountRanking = await userDb.GetUserPlaycountSpot(commandContext.Player.Name);
+			int? matchWinsRanking = await userDb.GetUserMatchWinsSpot(commandContext.Player.Name);
+
+			commandContext.Reply($"{commandContext.Player?.Name} has played a total of {commandContext.User.Playcount} matches (#{(playcountRanking + 1).ToString() ?? "unknown"}), " +
+				$"with {commandContext.User.MatchWins} wins ((#{(matchWinsRanking + 1).ToString() ?? "unknown"})).");
 		}
 
 		[BotEvent(BotEventType.Command, "playtimetop")]
@@ -72,7 +89,7 @@ namespace MackMultiBot.Behaviors
 
 			Dictionary<string, int> users = [];
 
-			for (int i = 1; i < playTimeTop4.Count; i++)
+			for (int i = 0; i < playTimeTop4.Count; i++)
 			{
 				var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == playTimeTop4[i].Name);
 				users.Add(playTimeTop4[i].Name, record == null ? playTimeTop4[i].Playtime : playTimeTop4[i].Playtime + (int)(DateTime.UtcNow - record.JoinTime).TotalSeconds);
@@ -92,9 +109,9 @@ namespace MackMultiBot.Behaviors
 
 			var playcountTop3 = await userDb.GetTopUsersByPlayCount(3);
 
-			commandContext.Reply($"#1: {playcountTop3[0].Name} with {TimeSpan.FromSeconds(playcountTop3[0].Playcount)} matches | " +
-								$"#2: {playcountTop3[1].Name} with {TimeSpan.FromSeconds(playcountTop3[1].Playcount)} matches | " +
-								$"#3: {playcountTop3[2].Name} with {TimeSpan.FromSeconds(playcountTop3[2].Playcount)} matches.");
+			commandContext.Reply($"#1: {playcountTop3[0].Name} with {playcountTop3[0].Playcount} matches | " +
+								$"#2: {playcountTop3[1].Name} with {playcountTop3[1].Playcount} matches | " +
+								$"#3: {playcountTop3[2].Name} with {playcountTop3[2].Playcount} matches.");
 		}
 
 		[BotEvent(BotEventType.Command, "matchwinstop")]
@@ -106,25 +123,14 @@ namespace MackMultiBot.Behaviors
 
 			var playcountTop3 = await userDb.GetTopUsersByMatchWins(3);
 
-			commandContext.Reply($"#1: {playcountTop3[0].Name} with {TimeSpan.FromSeconds(playcountTop3[0].MatchWins)} wins | " +
-								$"#2: {playcountTop3[1].Name} with {TimeSpan.FromSeconds(playcountTop3[1].MatchWins)} wins | " +
-								$"#3: {playcountTop3[2].Name} with {TimeSpan.FromSeconds(playcountTop3[2].MatchWins)} wins.");
+			commandContext.Reply($"#1: {playcountTop3[0].Name} with {playcountTop3[0].MatchWins} wins | " +
+								$"#2: {playcountTop3[1].Name} with {playcountTop3[1].MatchWins} wins | " +
+								$"#3: {playcountTop3[2].Name} with {playcountTop3[2].MatchWins} wins.");
 		}
 
-		[BotEvent(BotEventType.Command, "playcount")]
-		public async Task OnPlaycountCommand(CommandContext commandContext)
-		{
-			if (commandContext.Player?.Name == null)
-				return;
+		#endregion
 
-			var userDb = new UserDb();
-
-			int? playcountRanking = await userDb.GetUserPlaycountSpot(commandContext.Player.Name);
-			int? matchWinsRanking = await userDb.GetUserMatchWinsSpot(commandContext.Player.Name);
-
-			commandContext.Reply($"{commandContext.Player?.Name} has played a total of {commandContext.User.Playcount} matches (#{playcountRanking.ToString() ?? "unknown"}), " +
-				$"with {commandContext.User.MatchWins} wins ((#{matchWinsRanking.ToString() ?? "unknown"})).");
-		}
+			#region Map Stats
 
 		[BotEvent(BotEventType.Command, "bestmapscore")]
 		public async Task OnBestMapScoreCommand(CommandContext commandContext)
@@ -163,11 +169,11 @@ namespace MackMultiBot.Behaviors
 			var lastScore = await matchDb.GetLastPlayedByMapIdAsync(mapInfo.Id);
 			var bestScore = await scoreDb.GetBestMapScoreAsync(mapInfo.Id);
 
-			string finalMessage = $"[https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] has been picked {pickCount} times";
+			string finalMessage = $"[https://osu.ppy.sh/b/{mapInfo.Id} {mapInfo.Name}] has been picked {pickCount} times.";
 
 
 			if (lastScore != null)
-				finalMessage += $" it was last played {lastScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}.";
+				finalMessage += $" It was last played {lastScore.Time.Humanize(utcDate: true, culture: CultureInfo.InvariantCulture)}.";
 
 			if (bestScore != null)
 			{
@@ -214,6 +220,8 @@ namespace MackMultiBot.Behaviors
 
 			// TODO: Add PP calculations, probably want to store these in the score database save
 		}
+
+		#endregion
 
 		#endregion
 
@@ -342,7 +350,6 @@ namespace MackMultiBot.Behaviors
 					{
 						UserId = user.Id,
 						PlayerId = result.Player.Id,
-						LobbyId = context.Lobby.LobbyConfigurationId - 1,
 						MapId = map.Id,
 						OsuScoreId = score.Id,
 						BeatmapId = score.Beatmap!.Id,

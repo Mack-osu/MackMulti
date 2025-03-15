@@ -9,11 +9,6 @@ namespace MackMultiBot.Database.Entities
 		// This is only available for osu! scores which meet some criteria 
 		public long? OsuScoreId { get; set; }
 
-		// This should probably be a foreign key to the lobby table, however, due to
-		// the fact that the bot previously didn't use database for lobbies, it's not
-		// since the ids would not match.
-		public int LobbyId { get; set; }
-
 		public long BeatmapId { get; set; }
 
 		/// <summary>

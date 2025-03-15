@@ -95,30 +95,27 @@ namespace MackMultiBot
 			var commandContext = new CommandContext(message, args.Skip(1).ToArray(), bot, command, user);
 
 			// Execute the command in the context of a multiplayer lobby
-			foreach (var lobby in bot.Lobbies)
+			if (bot.Lobby?.MultiplayerLobby == null || bot.Lobby.MultiplayerLobby.ChannelName != message.Recipient || bot.Lobby.BehaviorEventProcessor == null)
+				return;
+
+			commandContext.Lobby = bot.Lobby;
+			commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)bot.Lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
+
+			// If the player is in the lobby, retrieve the user from the database with that name instead
+			// because the IRC username may change spaces to underscores and crap, and I don't think
+			// there's a good way to handle that, since what if the name actually contains an "_"?
+			if (commandContext.Player?.Name != null)
 			{
-				if (lobby.MultiplayerLobby == null || lobby.MultiplayerLobby.ChannelName != message.Recipient || lobby.BehaviorEventProcessor == null)
-					continue;
+				commandContext.User = await userDb.FindOrCreateUser(commandContext.Player!.Name);
+			}
 
-				commandContext.Lobby = lobby;
-				commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
-
-				// If the player is in the lobby, retrieve the user from the database with that name instead
-				// because the IRC username may change spaces to underscores and crap, and I don't think
-				// there's a good way to handle that, since what if the name actually contains an "_"?
-				if (commandContext.Player?.Name != null)
-				{
-					commandContext.User = await userDb.FindOrCreateUser(commandContext.Player!.Name);
-				}
-
-				try
-				{
-					await lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
-				}
-				catch (Exception e)
-				{
-					Logger.Log(LogLevel.Error, $"CommandProcessor: Error executing command {command.Command} in lobby {lobby.MultiplayerLobby.ChannelName} | Exception: {e}");
-				}
+			try
+			{
+				await bot.Lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
+			}
+			catch (Exception e)
+			{
+				Logger.Log(LogLevel.Error, $"CommandProcessor: Error executing command {command.Command} in lobby {bot.Lobby.MultiplayerLobby.ChannelName} | Exception: {e}");
 			}
 		}
 
@@ -164,25 +161,22 @@ namespace MackMultiBot
 			var commandContext = new CommandContext(message, args.Skip(1).ToArray(), bot, command, user);
 
 			// Execute the command in the context of a multiplayer lobby
-			foreach (var lobby in bot.Lobbies)
+			if (bot.Lobby?.MultiplayerLobby == null || bot.Lobby.MultiplayerLobby.ChannelName != message.Recipient || bot.Lobby.BehaviorEventProcessor == null)
+				return;
+
+			commandContext.Lobby = bot.Lobby;
+			commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)bot.Lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
+
+			if (commandContext.Player?.Name != null)
+				commandContext.User = await userDb.FindOrCreateUser(commandContext.Player.Name);
+
+			try
 			{
-				if (lobby.MultiplayerLobby == null || lobby.MultiplayerLobby.ChannelName != message.Recipient || lobby.BehaviorEventProcessor == null)
-					continue;
-
-				commandContext.Lobby = lobby;
-				commandContext.Player = (BanchoSharp.Multiplayer.MultiplayerPlayer?)lobby.MultiplayerLobby.Players.FirstOrDefault(x => x.Name.ToIrcNameFormat() == message.Sender.ToIrcNameFormat());
-
-				if (commandContext.Player?.Name != null)
-					commandContext.User = await userDb.FindOrCreateUser(commandContext.Player.Name);
-
-				try
-				{
-					await lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
-				}
-				catch (Exception e)
-				{
-					Logger.Log(LogLevel.Error, $"CommandProcessor: Error executing command {command.Command} in lobby {lobby.MultiplayerLobby.ChannelName} | Exception: {e}");
-				}
+				await bot.Lobby.BehaviorEventProcessor.OnCommandExecuted(command.Command, commandContext);
+			}
+			catch (Exception e)
+			{
+				Logger.Log(LogLevel.Error, $"CommandProcessor: Error executing command {command.Command} in lobby {bot.Lobby.MultiplayerLobby.ChannelName} | Exception: {e}");
 			}
 		}
 	}

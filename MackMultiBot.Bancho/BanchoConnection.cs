@@ -48,7 +48,7 @@ namespace MackMultiBot.Bancho
             await DisconnectAsync();
         }
 
-        private async Task ConnectAsync()
+        async Task ConnectAsync()
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -56,7 +56,7 @@ namespace MackMultiBot.Bancho
             if (IsConnected)
                 await DisconnectAsync();
 
-			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.Username, _banchoConfiguration.Password), BanchoSharp.LogLevel.None, false));
+			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.IrcUsername, _banchoConfiguration.IrcPassword), BanchoSharp.LogLevel.None, false));
 
             BanchoClient.OnAuthenticated += BanchoOnAuthenticated;
 

@@ -1,21 +1,22 @@
 ﻿using BanchoSharp.Interfaces;
+using BanchoSharp.Multiplayer;
 using MackMultiBot.Bancho;
 using MackMultiBot.Bancho.Data;
 using MackMultiBot.Bancho.Interfaces;
 using MackMultiBot.Database;
+using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
+using MackMultiBot.Logging;
 using Microsoft.EntityFrameworkCore;
 using OsuSharp;
-using MackMultiBot.Logging;
 
 namespace MackMultiBot
 {
 	public class Bot(BotConfiguration botConfiguration)
 	{
-		public List<ILobby> Lobbies { get; } = [];
-
+		public ILobby? Lobby { get; private set; }
 		public BanchoConnection BanchoConnection { get; } = new(botConfiguration);
-		public OsuApiClient OsuApiClient { get; } = new(botConfiguration.OsuApiClientId, botConfiguration.OsuApiClientSecret);
+		public OsuApiClient OsuApiClient { get; } = new(botConfiguration.ApiClientId, botConfiguration.ApiClientSecret);
 
 		public CommandProcessor? CommandProcessor { get; private set; }
 
@@ -31,26 +32,38 @@ namespace MackMultiBot
 
 			BanchoConnection.OnReady += OnBanchoReady;
 
-			await LoadLobbiesFromDatabase();
+			LoadLobbyConfiguration();
+
 			await BanchoConnection.StartAsync();
 		}
 
-		private async Task LoadLobbiesFromDatabase()
+		void LoadLobbyConfiguration()
 		{
-			await using var context = new BotDatabaseContext();
+			Logger.Log(LogLevel.Trace, "Bot: Loading lobby configuration.");
 
-			Logger.Log(LogLevel.Trace, "Bot: Loading lobby configurations...");
-
-			var lobbyConfigurations = await context.LobbyConfigurations.ToListAsync();
-
-			foreach (var lobbyConfiguration in lobbyConfigurations.Where(lobbyConfiguration => !Lobbies.Any(x => x.LobbyConfigurationId == lobbyConfiguration.Id)))
+			Lobby = new Lobby(this, new LobbyConfiguration()
 			{
-				var lobby = new Lobby(this, lobbyConfiguration.Id);
+				Name = botConfiguration.LobbyName,
+				Identifier = botConfiguration.LobbyIdentifier,
+				Mode = (GameMode)botConfiguration.Mode,
+				TeamMode = (LobbyFormat)botConfiguration.TeamMode,
+				ScoreMode = (WinCondition)botConfiguration.ScoreMode,
+				Mods = botConfiguration.Mods,
+				Size = botConfiguration.Size,
+				Password = botConfiguration.Password,
+				RuleConfig = new()
+				{
+					LimitDifficulty = botConfiguration.LimitDifficulty,
+					LimitMapLength = botConfiguration.LimitMapLength,
+					MinimumDifficulty = botConfiguration.MinimumDifficulty,
+					MaximumDifficulty = botConfiguration.MaximumDifficulty,
+					DifficultyMargin = botConfiguration.DifficultyMargin,
+					MinimumMapLength = botConfiguration.MinimumMapLength,
+					MaximumMapLength = botConfiguration.MaximumMapLength
+				}
+			});
 
-				Lobbies.Add(lobby);
-
-				Logger.Log(LogLevel.Info, $"Bot: Loaded lobby configuration with id {lobbyConfiguration.Id}");
-			}
+			Logger.Log(LogLevel.Info, $"Bot: Loaded lobby configuration for lobby '{botConfiguration.LobbyName}'");
 		}
 
 		private async void OnBanchoReady()
@@ -61,16 +74,17 @@ namespace MackMultiBot
 				return;
 			}
 
+			if (Lobby == null)
+			{
+				Logger.Log(LogLevel.Error, "Bot: No lobby found.");
+				return;
+			}
+
 			BanchoConnection.BanchoClient.OnChannelJoined += OnBanchoChannelJoined;
 			BanchoConnection.BanchoClient.OnChannelJoinFailure += OnBanchoChannelJoinFailed;
 			BanchoConnection.BanchoClient.BanchoBotEvents.OnTournamentLobbyCreated += OnBanchoLobbyCreated;
 
-			foreach (var lobby in Lobbies)
-            {
-                Logger.Log(LogLevel.Info, $"Bot: Starting lobby with id {lobby.LobbyConfigurationId}...");
-                
-                await lobby.ConnectOrCreateAsync();
-            }
+            await Lobby.ConnectOrCreateAsync();
 
 			CommandProcessor = new(this);
 			CommandProcessor.Start();

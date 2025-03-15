@@ -20,7 +20,7 @@ namespace MackMultiBot
 
 			var typeName = typeof(T).Name;
 
-			var data = dbContext.LobbyBehaviorData.FirstOrDefault(x => x.LobbyConfigurationId == lobby.LobbyConfigurationId && x.BehaviorName == typeName);
+			var data = dbContext.LobbyBehaviorData.FirstOrDefault(x => x.LobbyIdentifier == lobby.LobbyIdentifier && x.BehaviorName == typeName);
 			if (data == null)
 			{
 				Logger.Log(LogLevel.Trace, $"BehaviorDataProvider: Unable to find data for {typeName}, creating new one");
@@ -39,13 +39,13 @@ namespace MackMultiBot
 
 			var typeName = typeof(T).Name;
 
-			var data = await dbContext.LobbyBehaviorData.FirstOrDefaultAsync(x => x.LobbyConfigurationId == _lobby.LobbyConfigurationId && x.BehaviorName == typeName);
+			var data = await dbContext.LobbyBehaviorData.FirstOrDefaultAsync(x => x.LobbyIdentifier == _lobby.LobbyIdentifier && x.BehaviorName == typeName);
 
 			if (data == null)
 			{
 				data = new Database.Entities.LobbyBehaviorData
 				{
-					LobbyConfigurationId = _lobby.LobbyConfigurationId,
+					LobbyIdentifier = _lobby.LobbyIdentifier,
 					BehaviorName = typeName,
 					Data = JsonConvert.SerializeObject(Data)
 				};

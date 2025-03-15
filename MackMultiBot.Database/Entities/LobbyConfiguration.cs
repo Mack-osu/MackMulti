@@ -9,9 +9,9 @@ namespace MackMultiBot.Database.Entities
 {
 	public class LobbyConfiguration
 	{
-		public int Id { get; set; }
-
 		public string Name { get; set; } = "Unnamed";
+
+		public string Identifier { get; set; } = string.Empty;
 
 		public GameMode? Mode { get; set; } = GameMode.osu;
 
@@ -24,5 +24,7 @@ namespace MackMultiBot.Database.Entities
 		public int? Size { get; set; } = 16;
 
 		public string? Password { get; set; } = string.Empty;
+
+		public LobbyRuleConfiguration RuleConfig { get; set; } = new();
 	}
 }

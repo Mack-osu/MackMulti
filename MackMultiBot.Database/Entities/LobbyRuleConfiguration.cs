@@ -9,9 +9,6 @@ namespace MackMultiBot.Database.Entities
 {
 	public class LobbyRuleConfiguration
 	{
-		public int Id { get; set; }
-		public int LobbyConfigurationId { get; set; }
-
 		public bool LimitDifficulty { get; set; } = true;
 			public float MinimumDifficulty { get; set; } = 0;
 			public float MaximumDifficulty { get; set; } = float.PositiveInfinity;

@@ -1,0 +1,27 @@
+// osu! IRC credentials, obtained from https =//osu.ppy.sh/home/account/edit#legacy-api
+IrcUsername = [_Mack_]
+IrcPassword = d7195ae5
+
+// osu! API credentials, obtained from https =//osu.ppy.sh/home/account/edit#oauth
+ApiClientId = 38987
+ApiClientSecret = imwSlyKkmndcV9hVsBB6uiUI5MbLahRwturzzOuA
+
+DatabaseDirectory = E:/Coding/MackMulti/MackMultiBot/MackMultiBot.Database
+
+LobbyName = 5.5* - 7* | Auto Host Rotate
+Identifier = 7*
+Mode = 0
+TeamMode = 0
+ScoreMode = 0
+Mods = Freemod
+Size = 16
+Password = None
+
+// Rule Configurations
+LimitDifficulty = True
+LimitMapLength = True
+MinimumDifficulty = 5.5
+MaximumDifficulty = 7.0
+DifficultyMargin = 0.1
+MinimumMapLength = 30
+MaximumMapLength = 600

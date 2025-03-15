@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MackMultiBot.Logging;
+using MackMultiBot.Bancho.Data;
 
 namespace MackMultiBot
 {
@@ -24,9 +25,10 @@ namespace MackMultiBot
 		public MultiplayerLobby? MultiplayerLobby { get; private set; } = null;
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; private set; }
 
-		Messager _messager;
+		Messager? _messager;
 
-		public int LobbyConfigurationId { get; set; }
+		public string LobbyIdentifier { get; set; }
+		public LobbyConfiguration LobbyConfiguration { get; private set; }
 
 		public ITimerHandler? TimerHandler { get; private set; }
 
@@ -34,7 +36,7 @@ namespace MackMultiBot
 
 		private bool _shouldCreateNewInstance;
 
-		public Lobby(Bot bot, int lobbyConfigurationId)
+		public Lobby(Bot bot, LobbyConfiguration lobbyConfig)
 		{
 			Bot = bot;
 			BanchoConnection = bot.BanchoConnection;
@@ -43,9 +45,10 @@ namespace MackMultiBot
 			Bot.OnBanchoChannelJoinFailed += OnChannelJoinedFailure;
 			Bot.OnBanchoLobbyCreated += OnLobbyCreated;
 
-			LobbyConfigurationId = lobbyConfigurationId;
+			LobbyConfiguration = lobbyConfig;
+			LobbyIdentifier = lobbyConfig.Identifier;
 		}
-		
+
 		public async Task ConnectOrCreateAsync()
 		{
 			if (BanchoConnection.BanchoClient == null)
@@ -57,10 +60,9 @@ namespace MackMultiBot
 			if (MultiplayerLobby != null)
 			{
 				Logger.Log(LogLevel.Trace, "Lobby: Lobby instance already exists, parting from previous instance...");
-				await BanchoConnection.BanchoClient!.PartChannelAsync(MultiplayerLobby.ChannelName); 
+				await BanchoConnection.BanchoClient!.PartChannelAsync(MultiplayerLobby.ChannelName);
 			}
 
-			var lobbyConfiguration = await GetLobbyConfiguration();
 			var previousInstance = await GetRecentRoomInstance();
 			var existingChannel = string.Empty;
 
@@ -73,17 +75,15 @@ namespace MackMultiBot
 
 			if (!_shouldCreateNewInstance)
 			{
-				Logger.Log(LogLevel.Trace, $"Lobby: Attempting to join existing channel '{existingChannel}' for lobby '{lobbyConfiguration.Name}'...");
+				Logger.Log(LogLevel.Trace, $"Lobby: Attempting to join existing channel '{existingChannel}' for lobby '{LobbyConfiguration.Name}'...");
 
 				await BanchoConnection.BanchoClient.JoinChannelAsync(existingChannel);
-
-				Console.WriteLine(existingChannel);
 			}
 			else
 			{
-				Logger.Log(LogLevel.Trace, $"Lobby: Creating new channel for lobby '{lobbyConfiguration.Name}'");
+				Logger.Log(LogLevel.Trace, $"Lobby: Creating new channel for lobby '{LobbyConfiguration.Name}'");
 
-				await BanchoConnection.BanchoClient?.MakeTournamentLobbyAsync(lobbyConfiguration.Name)!;
+				await BanchoConnection.BanchoClient?.MakeTournamentLobbyAsync(LobbyConfiguration.Name)!;
 			}
 		}
 
@@ -130,9 +130,7 @@ namespace MackMultiBot
 
 			Logger.Log(LogLevel.Trace, $"Lobby: Joined channel {channel.ChannelName} successfully, building lobby instance...");
 
-			var lobbyConfiguration = await GetLobbyConfiguration();
-
-			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(channel.ChannelName[4..]), lobbyConfiguration.Name);
+			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(channel.ChannelName[4..]), LobbyConfiguration.Name);
 			await MultiplayerLobby.RefreshSettingsAsync();
 
 			await ConstructInstance();
@@ -140,6 +138,20 @@ namespace MackMultiBot
 
 		public async void OnChannelJoinedFailure(string attemptedChannel)
 		{
+			var previousInstance = await GetRecentRoomInstance(attemptedChannel);
+
+			// Remove the lobby instance we failed to join from database.
+			if (previousInstance != null)
+			{
+				await using var context = new BotDatabaseContext();
+
+				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData.Where(x => x.LobbyIdentifier == previousInstance.Identifier));
+
+				context.LobbyInstances.Remove(previousInstance);
+
+				await context.SaveChangesAsync();
+			}
+
 			if (BanchoConnection.BanchoClient == null)
 			{
 				Logger.Log(LogLevel.Warn, "Lobby: BanchoConnection.BanchoClient is null during channel join failure.");
@@ -153,21 +165,17 @@ namespace MackMultiBot
 				return;
 			}
 
-			var lobbyConfiguration = await GetLobbyConfiguration();
-
 			Logger.Log(LogLevel.Warn, $"Lobby: Failed to join channel {attemptedChannel}, creating new isntance");
 
 			_shouldCreateNewInstance = true;
 
-			await BanchoConnection.BanchoClient.MakeTournamentLobbyAsync(lobbyConfiguration.Name)!;
+			await BanchoConnection.BanchoClient.MakeTournamentLobbyAsync(LobbyConfiguration.Name)!;
 		}
 
 		#endregion
 
 		async Task ConstructInstance()
 		{
-			var lobbyConfiguration = GetLobbyConfiguration();
-
 			// Initialize behaviors
 			BehaviorEventProcessor = new(this);
 			TimerHandler = new TimerHandler(this);
@@ -180,7 +188,7 @@ namespace MackMultiBot
 			BehaviorEventProcessor.RegisterBehavior("MiscellaneousCommandsBehavior");
 
 			BehaviorEventProcessor.Start();
-
+			                                                             
 			// Ensure database entry
 			var recentRoomInstance = await GetRecentRoomInstance();
 			if (recentRoomInstance == null)
@@ -190,7 +198,7 @@ namespace MackMultiBot
 				context.LobbyInstances.Add(new LobbyInstance()
 				{
 					Channel = _channelId,
-					LobbyConfigurationId = LobbyConfigurationId
+					Identifier = LobbyIdentifier
 				});
 
 				await context.SaveChangesAsync();
@@ -204,28 +212,12 @@ namespace MackMultiBot
 			Logger.Log(LogLevel.Trace, "Lobby: Lobby instance built successfully");
 		}
 
-		public async Task<LobbyConfiguration> GetLobbyConfiguration()
-		{
-			await using var context = new BotDatabaseContext();
-
-			var configuration = await context.LobbyConfigurations.FirstOrDefaultAsync(x => x.Id == LobbyConfigurationId);
-			if (configuration == null)
-			{
-				Logger.Log(LogLevel.Error, "Lobby: Failed to find lobby configuration.");
-
-				throw new InvalidOperationException("Failed to find lobby configuration.");
-			}
-
-			return configuration;
-		}
-
 		async Task<LobbyInstance?> GetRecentRoomInstance(string? channelId = null)
 		{
 			await using var context = new BotDatabaseContext();
-
 			var query = context.LobbyInstances
 				.OrderByDescending(x => x.Id)
-				.Where(x => x.LobbyConfigurationId == LobbyConfigurationId);
+				.Where(x => x.Identifier == LobbyIdentifier);
 
 			if (channelId != null)
 				query = query.Where(x => x.Channel == channelId);

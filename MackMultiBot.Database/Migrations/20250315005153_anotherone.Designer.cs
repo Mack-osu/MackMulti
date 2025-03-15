@@ -3,6 +3,7 @@ using System;
 using MackMultiBot.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MackMultiBot.Database.Migrations
 {
     [DbContext(typeof(BotDatabaseContext))]
-    partial class BotDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250315005153_anotherone")]
+    partial class anotherone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
@@ -57,6 +60,42 @@ namespace MackMultiBot.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LobbyInstances");
+                });
+
+            modelBuilder.Entity("MackMultiBot.Database.Entities.LobbyRuleConfiguration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float?>("DifficultyMargin")
+                        .HasColumnType("REAL");
+
+                    b.Property<bool>("LimitDifficulty")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("LimitMapLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LobbyIdentifier")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("MaximumDifficulty")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("MaximumMapLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("MinimumDifficulty")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("MinimumMapLength")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LobbyRuleConfigurations");
                 });
 
             modelBuilder.Entity("MackMultiBot.Database.Entities.PlayedMap", b =>

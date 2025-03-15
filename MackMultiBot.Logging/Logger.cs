@@ -97,11 +97,11 @@ namespace MackMultiBot.Logging
 					break;
 
 				case LogLevel.Trace:
-					Console.ForegroundColor = ConsoleColor.Gray;
+					Console.ForegroundColor = ConsoleColor.DarkGray;
 					break;
 
 				case LogLevel.Info:
-					Console.ForegroundColor = ConsoleColor.Gray;
+					Console.ForegroundColor = ConsoleColor.DarkGray;
 					break;
 
 				case LogLevel.Warn:

@@ -11,7 +11,8 @@ namespace MackMultiBot.Database.Entities
 	public class LobbyInstance
 	{
 		public int Id { get; set; }
-		public int LobbyConfigurationId { get; set; }
+
+		public string Identifier { get; set; } = string.Empty;
 
 		/// <summary>
 		/// Channel name in the format "#mp_id"

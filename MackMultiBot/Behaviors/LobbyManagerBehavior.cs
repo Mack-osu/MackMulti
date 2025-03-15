@@ -46,8 +46,8 @@ namespace MackMultiBot.Behaviors
 
 			await Task.Delay(10000);
 
-			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
-			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyConfigurationId == context.Lobby.LobbyConfigurationId));
+			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.Identifier == context.Lobby.LobbyIdentifier));
+			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyIdentifier == context.Lobby.LobbyIdentifier));
 
 			await databaseCtx.SaveChangesAsync();
 
@@ -77,11 +77,11 @@ namespace MackMultiBot.Behaviors
 		#region Bancho Events
 
 		[BotEvent(BotEventType.Initialize)]
-		public async Task OnInitialize()
+		public void OnInitialize()
 		{
 			if (Data.IsFreshInstance)
 			{
-				await OnMatchFinished(); // Ensures room config
+				OnMatchFinished(); // Ensures room config
 				Data.IsFreshInstance = false;
 				return;
 			}
@@ -90,14 +90,12 @@ namespace MackMultiBot.Behaviors
 		}
 
 		[BotEvent(BotEventType.MatchFinished)]
-		public async Task OnMatchFinished()
+		public void OnMatchFinished()
 		{
-			var lobbyConfig = await context.Lobby.GetLobbyConfiguration();
-
-			EnsureRoomName(lobbyConfig);
-			EnsureRoomPassword(lobbyConfig);
-			EnsureMatchSettings(lobbyConfig);
-			EnsureMatchMods(lobbyConfig);
+			EnsureRoomName(context.Lobby.LobbyConfiguration);
+			EnsureRoomPassword(context.Lobby.LobbyConfiguration);
+			EnsureMatchSettings(context.Lobby.LobbyConfiguration);
+			EnsureMatchMods(context.Lobby.LobbyConfiguration);
 		}
 
 		#endregion
