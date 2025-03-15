@@ -8,14 +8,16 @@ ApiClientSecret = imwSlyKkmndcV9hVsBB6uiUI5MbLahRwturzzOuA
 
 DatabaseDirectory = E:/Coding/MackMulti/MackMultiBot/MackMultiBot.Database
 
-LobbyName = 5.5* - 7* | Auto Host Rotate
+LobbyName = testing
+//LobbyName = 5.5* - 7* | Auto Host Rotate
 Identifier = 7*
 Mode = 0
 TeamMode = 0
 ScoreMode = 0
 Mods = Freemod
 Size = 16
-Password = None
+Password = e
+//Password = None
 
 // Rule Configurations
 LimitDifficulty = True

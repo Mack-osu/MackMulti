@@ -10,6 +10,7 @@ using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
 using MackMultiBot.OsuData.Extensions;
 using OsuSharp.Enums;
+using OsuSharp.Models.Beatmaps;
 using OsuSharp.Models.Scores;
 using OsuSharp.Models.Users;
 using System.Globalization;
@@ -214,11 +215,58 @@ namespace MackMultiBot.Behaviors
 				return;
 			}
 
-			var set = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(map!.SetId));
+			var set = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(map.SetId));
 
 			commandContext.Reply($"{commandContext.Player.Name}'s most recent score in this lobby is a {latestScore.GetAccuracy():0.00}% {latestScore.Rank} rank with {latestScore.MaxCombo}x combo, {latestScore.Count300}/{latestScore.Count100}/{latestScore.Count50}/{latestScore.CountMiss} on [https://osu.ppy.sh/b/{latestScore.BeatmapId} {set?.Title}].");
 
 			// TODO: Add PP calculations, probably want to store these in the score database save
+		}
+
+		#endregion
+
+		#region Lobby Stats
+
+		[BotEvent(BotEventType.Command, "totalplaytime")]
+		public async void OnTotalPlaytimeCommand(CommandContext commandContext)
+		{
+			var userDb = new UserDb();
+
+			var totalPlayTime = await userDb.GetTotalPlayTime();
+
+			commandContext.Reply($"The total combined playtime of all players to join this lobby is {totalPlayTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}. " +
+								$"That's over {Math.Floor(totalPlayTime.TotalDays)} days!");
+		}
+
+		[BotEvent(BotEventType.Command, "mostpicked")]
+		public async void OnMostPickedCommand(CommandContext commandContext)
+		{
+			var matchDb = new MatchDb();
+
+			var top3MostPlayed = matchDb.GetMostPlayedMaps(3);
+			BeatmapExtended?[] top3Beatmaps =
+			[
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync((int)top3MostPlayed[0].BeatmapId)),
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync((int)top3MostPlayed[1].BeatmapId)),
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync((int)top3MostPlayed[2].BeatmapId))
+			];
+
+			if (top3Beatmaps.Length < 3)
+				return;
+
+			BeatmapSetExtended?[] top3BeatmapSets =
+			[
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(top3Beatmaps[0]!.SetId)),
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(top3Beatmaps[1]!.SetId)),
+				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(top3Beatmaps[2]!.SetId))
+			];
+
+			if (top3BeatmapSets.Length < 3)
+				return;
+
+			commandContext.Reply($"#1: [https://osu.ppy.sh/b/{top3MostPlayed[0].BeatmapId} {top3BeatmapSets[0]!.Title}] ({top3MostPlayed[0].PlayCount} times) | " +
+								$"#2: [https://osu.ppy.sh/b/{top3MostPlayed[1].BeatmapId} {top3BeatmapSets[1]!.Title}] ({top3MostPlayed[1].PlayCount} times) | " +
+								$"#3: [https://osu.ppy.sh/b/{top3MostPlayed[2].BeatmapId} {top3BeatmapSets[2]!.Title}]({top3MostPlayed[2].PlayCount} times).");
+
 		}
 
 		#endregion

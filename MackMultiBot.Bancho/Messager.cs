@@ -12,10 +12,10 @@ namespace MackMultiBot.Bancho
 
 		public void Start()
 		{
-			// Start the named pipe server to listen for input from another console
 			Task.Run(() => StartPipeServer());
 		}
 
+		// Starts the named pipe server to listen for input from another console
 		private void StartPipeServer()
 		{
 			_pipeServer = new NamedPipeServerStream("MessagePipe", PipeDirection.In);
@@ -23,16 +23,15 @@ namespace MackMultiBot.Bancho
 			Logger.Log(LogLevel.Info, "Messager: Waiting for messages from the secondary console...");
 			_pipeServer.WaitForConnection();
 
-			using (var reader = new StreamReader(_pipeServer))
-			{
-				while (true)
-				{
-					string? message = reader.ReadLine();
+			using var reader = new StreamReader(_pipeServer);
 
-					if (message != null)
-					{
-						messageHandler.SendMessage(channelId, message);
-					}
+			while (true)
+			{
+				string? message = reader.ReadLine();
+
+				if (message != null)
+				{
+					messageHandler.SendMessage(channelId, message);
 				}
 			}
 		}
