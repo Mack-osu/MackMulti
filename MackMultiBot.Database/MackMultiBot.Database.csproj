@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    
     <Reference Include="BanchoSharp">
-      <HintPath>..\..\BanchoSharp\bin\Debug\net6.0\BanchoSharp.dll</HintPath>
+      <HintPath>..\..\Forks\BanchoSharp\BanchoSharp\bin\Release\net6.0\BanchoSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
 

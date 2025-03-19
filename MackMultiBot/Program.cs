@@ -4,7 +4,8 @@ using MackMultiBot.Database;
 
 Console.Title = "BotLogger";
 
-var config = ConfigReader.ReadConfig("../../../../config.txt");
+string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+var config = ConfigReader.ReadConfig(configPath);
 BotDatabaseContext.ConnectionString = $"Data Source={config.DatabaseDirectory}/data.db";
 
 Console.WriteLine($"Data Source={config.DatabaseDirectory}/data.db");
