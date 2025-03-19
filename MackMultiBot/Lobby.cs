@@ -165,7 +165,7 @@ namespace MackMultiBot
 				return;
 			}
 
-			Logger.Log(LogLevel.Warn, $"Lobby: Failed to join channel {attemptedChannel}, creating new isntance");
+			Logger.Log(LogLevel.Warn, $"Lobby: Failed to join channel {attemptedChannel}, creating new instance");
 
 			_shouldCreateNewInstance = true;
 
