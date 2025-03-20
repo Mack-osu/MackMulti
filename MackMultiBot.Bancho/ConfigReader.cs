@@ -15,6 +15,10 @@ namespace MackMultiBot.Bancho
 			var config = new BotConfiguration();
 			var lines = File.ReadAllLines(filePath);
 
+			// Default values
+			config.DatabaseDirectory = Path.GetDirectoryName(filePath)!;
+			config.LogDirectory = Path.GetDirectoryName(filePath)!;
+
 			foreach (var line in lines)
 			{
 				if (string.IsNullOrWhiteSpace(line) || !line.Contains('=') || line.StartsWith("//"))
@@ -42,6 +46,13 @@ namespace MackMultiBot.Bancho
 						config.ApiClientSecret = value;
 						break;
 					case "DatabaseDirectory":
+						if (string.IsNullOrWhiteSpace(value))
+							break;
+						config.DatabaseDirectory = value;
+						break;
+					case "LogDirectory":
+						if (string.IsNullOrWhiteSpace(value))
+							break;
 						config.DatabaseDirectory = value;
 						break;
 					case "LobbyName":
@@ -60,7 +71,7 @@ namespace MackMultiBot.Bancho
 						config.ScoreMode = int.Parse(value);
 						break;
 					case "Mods":
-						config.Mods = value.Split(',');
+						config.Mods = value.Split(", ");
 						break;
 					case "Size":
 						config.Size = int.Parse(value);

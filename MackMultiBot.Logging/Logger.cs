@@ -4,15 +4,14 @@ namespace MackMultiBot.Logging
 {
 	public static class Logger
 	{
-		static string _logFilePath = "E:/Temp/MackMulti/MultiLog.txt";
+		public static string? LogFilePath;
 
-		private static readonly Lock _consoleLock = new(); // Lock object to ensure thread-safety for console writing
+		private static readonly Lock _consoleLock = new();
 
 		public static void Log(LogLevel level, string message)
 		{
 			string consoleTimestamp = $"{DateTime.Now:HH:mm}";
 
-			// Synchronize console output
 			lock (_consoleLock)
 			{
 				ConfigureColorsForTimestamp();
@@ -30,9 +29,12 @@ namespace MackMultiBot.Logging
 
 		private static async Task LogToFileAsync(LogLevel level, string message)
 		{
+			if (LogFilePath == null)
+				return;
+
 			string fileTimestamp = $"{DateTime.Now:HH:mm:ss.fff}";
 			string fileMessage = $"{fileTimestamp} [{level}] {message}";
-			using StreamWriter writer = new(_logFilePath, append: true);
+			using StreamWriter writer = new(LogFilePath, append: true);
 			await writer.WriteLineAsync(fileMessage);
 		}
 

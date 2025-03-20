@@ -14,6 +14,7 @@ namespace MackMultiBot.Bancho.Data
 		public string ApiClientId { get; set; } = string.Empty;
 		public string ApiClientSecret { get; set; } = string.Empty;
 		public string DatabaseDirectory { get; set; } = string.Empty;
+		public string LogDirectory { get; set; } = string.Empty;
 		public string LobbyName { get; set; } = string.Empty;
 		public string LobbyIdentifier { get; set; } = string.Empty;
 		public int Mode { get; set; }
