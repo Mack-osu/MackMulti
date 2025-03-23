@@ -71,16 +71,24 @@ namespace MackMultiBot.Bancho
 						config.ScoreMode = int.Parse(value);
 						break;
 					case "Mods":
+						if (string.IsNullOrWhiteSpace(value))
+						{
+							config.Mods = ["None"];
+							break;
+						}
+
 						config.Mods = value.Split(", ");
 						break;
 					case "Size":
 						config.Size = int.Parse(value);
 						break;
 					case "Password":
-						if (value == "None")
+						if (string.IsNullOrWhiteSpace(value))
+						{
 							config.Password = string.Empty;
-						else
-							config.Password = value;
+							break;
+						}
+						config.Password = value;
 						break;
 					case "LimitDifficulty":
 						config.LimitDifficulty = bool.Parse(value);

@@ -49,7 +49,7 @@ namespace MackMultiBot
 
 		bool IsValidDifficulty(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes, bool useDifficultyAttributes)
 		{
-			if (lobbyRuleConfiguration == null)
+			if (lobbyRuleConfiguration == null || lobbyRuleConfiguration.LimitDifficulty)
 				return true;
 
 			var SR = !useDifficultyAttributes ? beatmapInfo?.DifficultyRating : difficultyAttributes.DifficultyRating;
@@ -60,7 +60,7 @@ namespace MackMultiBot
 
 		bool IsValidMapLength(BeatmapExtended beatmapInfo)
 		{
-			if (lobbyRuleConfiguration == null)
+			if (lobbyRuleConfiguration == null || lobbyRuleConfiguration.LimitMapLength)
 				return true;
 
 			return !(beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfiguration.MaximumMapLength)

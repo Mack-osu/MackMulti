@@ -116,7 +116,6 @@ namespace MackMultiBot.Behaviors
 					}
 				}
 
-				Logger.Log(LogLevel.Warn, validationResult.ToString());
 				await EnforceLobbyRules(beatmapInfo, difficultyAttributes, validationResult, lobbyRuleConfig!);
 			}
 			catch (HttpRequestException e)

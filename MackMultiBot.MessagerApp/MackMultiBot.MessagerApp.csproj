@@ -6,11 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>..\bin\</BaseOutputPath>
-    <ApplicationIcon>catbulgemessage.ico</ApplicationIcon>
+    <ApplicationIcon>MessagerApp.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="catbulgemessage.ico" />
+    <Content Include="MessagerApp.ico" />
   </ItemGroup>
 
 </Project>

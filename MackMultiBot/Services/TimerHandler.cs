@@ -35,8 +35,6 @@ namespace MackMultiBot
 
 		public Task Start()
 		{
-			// Will need to await timer loading here in the future
-
 			_isRunning = true;
 			_timerEventPumpTask = Task.Run(TimerPump);
 			return Task.CompletedTask;
@@ -44,8 +42,6 @@ namespace MackMultiBot
 
 		public Task Stop()
 		{
-			// Will need to await timer saving here in the future
-
 			_isRunning = false;
 			return Task.CompletedTask;
 		}

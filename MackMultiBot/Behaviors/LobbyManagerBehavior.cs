@@ -90,11 +90,15 @@ namespace MackMultiBot.Behaviors
 		}
 
 		[BotEvent(BotEventType.MatchFinished)]
-		public void OnMatchFinished()
+		public async void OnMatchFinished()
 		{
+			// Artificial delay, hoping this fixes the issue where settings are sometimes set to for example !mp password PRIVMSG!mp password e and so on
 			EnsureRoomName(context.Lobby.LobbyConfiguration);
+			await Task.Delay(50);
 			EnsureRoomPassword(context.Lobby.LobbyConfiguration);
+			await Task.Delay(50);
 			EnsureMatchSettings(context.Lobby.LobbyConfiguration);
+			await Task.Delay(50);
 			EnsureMatchMods(context.Lobby.LobbyConfiguration);
 		}
 
@@ -122,6 +126,12 @@ namespace MackMultiBot.Behaviors
 			var size = configuration.Size.ToString() ?? "16";
 
 			context.SendMessage($"!mp set {teamMode} {scoreMode} {size}");
+		}
+
+		[BotEvent(BotEventType.Command, "enforcemods")]
+		public void OnEnforceModsCommand(CommandContext commandContext)
+		{
+			OnMatchFinished();
 		}
 
 		// Stolen from matte :)
