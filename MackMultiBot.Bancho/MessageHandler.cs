@@ -91,7 +91,8 @@ namespace MackMultiBot.Bancho
             }
 
             Logger.Log(LogLevel.Info, "MessageHandler: Message pump has stopped");
-        }
+			IsRunning = false;
+		}
 
         private void BanchoOnPrivateMessageReceived(IPrivateIrcMessage e)
         {   

@@ -86,8 +86,11 @@ namespace MackMultiBot
 
             await Lobby.ConnectOrCreateAsync();
 
-			CommandProcessor = new(this);
-			CommandProcessor.Start();
+			if (CommandProcessor == null)
+			{
+				CommandProcessor = new(this);
+				CommandProcessor.Start();
+			}
 		}
 	}
 }

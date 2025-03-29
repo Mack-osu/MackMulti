@@ -28,7 +28,8 @@ namespace MackMultiBot.Bancho
         CancellationTokenSource? _cancellationTokenSource;
         readonly BotConfiguration _banchoConfiguration;
 
-        ConnectionWatch? _connectionWatch;
+        // Temporarily public for testing purposes
+        public ConnectionWatch? _connectionWatch;
 
         public BanchoConnection(BotConfiguration banchoClientConfiguration)
         {
@@ -56,6 +57,8 @@ namespace MackMultiBot.Bancho
             // Make sure we're disconnected before reconnecting
             if (IsConnected)
                 await DisconnectAsync();
+
+            BanchoClient?.Dispose();
 
 			BanchoClient = new BanchoClient( new BanchoClientConfig(new IrcCredentials(_banchoConfiguration.IrcUsername, _banchoConfiguration.IrcPassword), BanchoSharp.LogLevel.None, false));
 
@@ -127,13 +130,12 @@ namespace MackMultiBot.Bancho
 
 		private async void OnConnectionLost()
 		{
+            
 			IsConnected = false;
 
 			_cancellationTokenSource?.Cancel();
 
 			Logging.Logger.Log(Logging.LogLevel.Error, $"BanchoConnection: Connection lost, attempting to reconnect in {10} seconds...");
-
-			//OnConnectionError?.Invoke();
 
 			await Task.Delay(10 * 1000);
 
@@ -146,10 +148,6 @@ namespace MackMultiBot.Bancho
 
 				await Task.Delay(10000);
 
-				// If we're back in action, IsConnected will be true
-				// we can safely exit due to a new watchdog being started
-				// so even if we lose connection again, we'll be able to
-				// reconnect.
 				if (IsConnected)
 				{
 					Logging.Logger.Log(Logging.LogLevel.Info, "BanchoConnection: Reconnected successfully");

@@ -17,7 +17,10 @@ namespace MackMultiBot.Bancho
 
 		public event Action? OnConnectionLost;
 
-		readonly TcpClient _tcpClient = tcpClient;
+		// Temporarily public for testing purposes
+		public TcpClient _tcpClient = tcpClient;
+		//readonly TcpClient _tcpClient = tcpClient;
+
 		readonly IMessageHandler _messageHandler = messageHandler;
 
 		Task? _connectionWatchTask;
@@ -80,6 +83,7 @@ namespace MackMultiBot.Bancho
 				Logger.Log(LogLevel.Error, "ConnectionWatch: Lost Connection");
 
 				_ = Task.Run(() => { OnConnectionLost?.Invoke(); });
+				break;
 			}
 
 			Logger.Log(LogLevel.Info, "ConnectionWatch: Watch has stopped");
