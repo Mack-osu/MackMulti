@@ -19,7 +19,7 @@ namespace MackMultiBot.Interfaces
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
 		public ITimerHandler? TimerHandler { get; }
 
-		public Task ConnectOrCreateAsync();
+		public Task ConnectOrCreateAsync(bool isReconnection = false);
 
 	}
 }

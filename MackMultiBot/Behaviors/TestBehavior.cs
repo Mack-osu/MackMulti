@@ -13,7 +13,9 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "severconnection")]
 		public void OnSeverConnectionCommand(CommandContext commandContext)
 		{
-			commandContext.Bot.BanchoConnection._connectionWatch._tcpClient = null;
+			commandContext.Lobby.ConnectOrCreateAsync();
+
+			//commandContext.Bot.BanchoConnection._connectionWatch._tcpClient = null;
 		}
 	}
 }

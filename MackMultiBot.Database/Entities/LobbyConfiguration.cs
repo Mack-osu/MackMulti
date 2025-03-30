@@ -13,8 +13,6 @@ namespace MackMultiBot.Database.Entities
 
 		public string Identifier { get; set; } = string.Empty;
 
-		public GameMode? Mode { get; set; } = GameMode.osu;
-
 		public LobbyFormat? TeamMode { get; set; } = LobbyFormat.HeadToHead;
 
 		public WinCondition? ScoreMode { get; set; } = WinCondition.Score;

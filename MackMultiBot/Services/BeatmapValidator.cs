@@ -25,11 +25,10 @@ namespace MackMultiBot
 			if (!IsValidDifficulty(beatmapInfo, difficultyAttributes, useDifficultyAttributes))
 				return MapValidationResult.InvalidDifficulty;
 
+
 			if (!IsValidMapLength(beatmapInfo))
 				return MapValidationResult.InvalidMapLength;
-			
-			// Gamemode
-			
+
 			// Map bans?
 
 			return MapValidationResult.Valid;
@@ -49,7 +48,7 @@ namespace MackMultiBot
 
 		bool IsValidDifficulty(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes, bool useDifficultyAttributes)
 		{
-			if (lobbyRuleConfiguration == null || lobbyRuleConfiguration.LimitDifficulty)
+			if (lobbyRuleConfiguration == null || !lobbyRuleConfiguration.LimitDifficulty)
 				return true;
 
 			var SR = !useDifficultyAttributes ? beatmapInfo?.DifficultyRating : difficultyAttributes.DifficultyRating;
@@ -60,7 +59,7 @@ namespace MackMultiBot
 
 		bool IsValidMapLength(BeatmapExtended beatmapInfo)
 		{
-			if (lobbyRuleConfiguration == null || lobbyRuleConfiguration.LimitMapLength)
+			if (lobbyRuleConfiguration == null || !lobbyRuleConfiguration.LimitMapLength)
 				return true;
 
 			return !(beatmapInfo.TotalLength.TotalSeconds > lobbyRuleConfiguration.MaximumMapLength)

@@ -49,7 +49,7 @@ namespace MackMultiBot
 			LobbyIdentifier = lobbyConfig.Identifier;
 		}
 
-		public async Task ConnectOrCreateAsync()
+		public async Task ConnectOrCreateAsync(bool isReconnection = false)
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
@@ -59,15 +59,17 @@ namespace MackMultiBot
 
 			if (MultiplayerLobby != null)
 			{
-				Logger.Log(LogLevel.Trace, "Lobby: Lobby instance already exists, parting from previous instance...");
+				Logger.Log(LogLevel.Trace, $"Lobby: Lobby instance already exists, parting from previous instance {MultiplayerLobby.ChannelName}");
+
 				await BanchoConnection.BanchoClient!.PartChannelAsync(MultiplayerLobby.ChannelName);
+				await ShutdownInstance();
 			}
 
 			var previousInstance = await GetRecentRoomInstance();
 			var existingChannel = string.Empty;
 
 			// If we have a previous instance, attempt to join via that channel instead.
-			if (previousInstance != null)
+			if (previousInstance != null && !isReconnection)
 				existingChannel = previousInstance.Channel;
 
 			_channelId = existingChannel;
@@ -186,6 +188,7 @@ namespace MackMultiBot
 			BehaviorEventProcessor.RegisterBehavior("StartBehavior");
 			BehaviorEventProcessor.RegisterBehavior("MapManagerBehavior");
 			BehaviorEventProcessor.RegisterBehavior("MiscellaneousCommandsBehavior");
+			BehaviorEventProcessor.RegisterBehavior("LobbyWatchBehavior");
 
 			BehaviorEventProcessor.Start();
 			                                                             
@@ -223,6 +226,20 @@ namespace MackMultiBot
 				query = query.Where(x => x.Channel == channelId);
 
 			return await query.FirstOrDefaultAsync();
+		}
+
+		async Task ShutdownInstance()
+		{
+			if (TimerHandler != null)
+			{
+				await TimerHandler.Stop();
+				TimerHandler = null;
+			}
+
+			BehaviorEventProcessor?.Stop();
+			BehaviorEventProcessor = null;
+
+			Logger.Log(LogLevel.Info, "Lobby: Lobby instance shut down successfully.");
 		}
 	}
 }

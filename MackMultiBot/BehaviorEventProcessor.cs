@@ -76,6 +76,31 @@ namespace MackMultiBot
 			}
 		}
 
+		public void Stop()
+		{
+			if (lobby.MultiplayerLobby == null)
+				throw new InvalidOperationException("BehaviorEventProcessor: Cannot stop processor while MutiplayerLobby is null");
+
+			lobby.MultiplayerLobby.OnMatchStarted -= OnMatchStarted;
+			lobby.MultiplayerLobby.OnMatchFinished -= OnMatchFinished;
+			lobby.MultiplayerLobby.OnMatchAborted -= OnMatchAborted;
+			lobby.MultiplayerLobby.OnPlayerJoined -= OnPlayerJoined;
+			lobby.MultiplayerLobby.OnPlayerDisconnected -= OnPlayerDisconnected;
+			lobby.MultiplayerLobby.OnHostChanged -= OnHostChanged;
+			lobby.MultiplayerLobby.OnHostChangingMap -= OnHostChangingMap;
+			lobby.MultiplayerLobby.OnAllPlayersReady -= OnAllPlayersReady;
+			lobby.MultiplayerLobby.OnBeatmapChanged -= OnBeatmapChanged;
+
+			lobby.BanchoConnection.MessageHandler.OnMessageReceived -= OnMessageReceived;
+
+			foreach (var channel in _eventChannels.Values)
+			{
+				channel.Writer.Complete();
+			}
+
+			Task.WhenAll(_pumps).Wait();
+		}
+
 		#region Bancho Events
 
 		private async void OnMatchStarted()
