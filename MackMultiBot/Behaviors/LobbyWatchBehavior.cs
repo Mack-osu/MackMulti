@@ -20,9 +20,9 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.TimerFinished, "LobbyWatchTimer")]
 		public void OnWatchTimerElapsed()
 		{
-			if ((DateTime.UtcNow - Data.RecentEventTime).TotalHours > 1)
+			if ((DateTime.UtcNow - Data.RecentEventTime).TotalHours >= 0.75)
 			{
-				Logger.Log(LogLevel.Warn, "No lobby events in the past fifteen minutes, attempting restart.");
+				Logger.Log(LogLevel.Warn, "No lobby events in the past 45 minutes, attempting restart.");
 
 				var lobby = context.Lobby;
 
@@ -32,6 +32,7 @@ namespace MackMultiBot.Behaviors
 					{
 						// Shoot an mp close into the void to make sure no duplicate lobbies are running before relaunching a new one
 						context.SendMessage("!mp close");
+						lobby.RemoveInstance();
 						await lobby.ConnectOrCreateAsync(true);
 					}
 					catch (Exception e)

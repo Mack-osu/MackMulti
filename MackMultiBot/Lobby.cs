@@ -49,7 +49,7 @@ namespace MackMultiBot
 			LobbyIdentifier = lobbyConfig.Identifier;
 		}
 
-		public async Task ConnectOrCreateAsync(bool isReconnection = false)
+		public async Task ConnectOrCreateAsync(bool IsRecreation = false)
 		{
 			if (BanchoConnection.BanchoClient == null)
 			{
@@ -69,7 +69,7 @@ namespace MackMultiBot
 			var existingChannel = string.Empty;
 
 			// If we have a previous instance, attempt to join via that channel instead.
-			if (previousInstance != null && !isReconnection)
+			if (previousInstance != null && !IsRecreation)
 				existingChannel = previousInstance.Channel;
 
 			_channelId = existingChannel;
@@ -226,6 +226,23 @@ namespace MackMultiBot
 				query = query.Where(x => x.Channel == channelId);
 
 			return await query.FirstOrDefaultAsync();
+		}
+
+		public async void RemoveInstance()
+		{
+			var instance = await GetRecentRoomInstance(_channelId);
+
+			// Remove the lobby instance we failed to join from database.
+			if (instance != null)
+			{
+				await using var context = new BotDatabaseContext();
+
+				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData.Where(x => x.LobbyIdentifier == instance.Identifier));
+
+				context.LobbyInstances.Remove(instance);
+
+				await context.SaveChangesAsync();
+			}
 		}
 
 		async Task ShutdownInstance()

@@ -20,6 +20,7 @@ namespace MackMultiBot.Interfaces
 		public ITimerHandler? TimerHandler { get; }
 
 		public Task ConnectOrCreateAsync(bool isReconnection = false);
+		public void RemoveInstance();
 
 	}
 }
