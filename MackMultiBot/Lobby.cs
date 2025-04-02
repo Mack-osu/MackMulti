@@ -27,7 +27,6 @@ namespace MackMultiBot
 
 		Messager? _messager;
 
-		public string LobbyIdentifier { get; set; }
 		public LobbyConfiguration LobbyConfiguration { get; private set; }
 
 		public ITimerHandler? TimerHandler { get; private set; }
@@ -46,7 +45,6 @@ namespace MackMultiBot
 			Bot.OnBanchoLobbyCreated += OnLobbyCreated;
 
 			LobbyConfiguration = lobbyConfig;
-			LobbyIdentifier = lobbyConfig.Identifier;
 		}
 
 		public async Task ConnectOrCreateAsync(bool IsRecreation = false)
@@ -147,7 +145,7 @@ namespace MackMultiBot
 			{
 				await using var context = new BotDatabaseContext();
 
-				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData.Where(x => x.LobbyIdentifier == previousInstance.Identifier));
+				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData);
 
 				context.LobbyInstances.Remove(previousInstance);
 
@@ -200,8 +198,7 @@ namespace MackMultiBot
 
 				context.LobbyInstances.Add(new LobbyInstance()
 				{
-					Channel = _channelId,
-					Identifier = LobbyIdentifier
+					Channel = _channelId
 				});
 
 				await context.SaveChangesAsync();
@@ -218,14 +215,16 @@ namespace MackMultiBot
 		async Task<LobbyInstance?> GetRecentRoomInstance(string? channelId = null)
 		{
 			await using var context = new BotDatabaseContext();
-			var query = context.LobbyInstances
-				.OrderByDescending(x => x.Id)
-				.Where(x => x.Identifier == LobbyIdentifier);
+			//var query = context.LobbyInstances
+			//	.OrderByDescending(x => x.Id).ToListAsync();
+
+			//if (channelId != null)
+			//	query = query.Where(x => x.Channel == channelId);
 
 			if (channelId != null)
-				query = query.Where(x => x.Channel == channelId);
+				return await context.LobbyInstances.FirstOrDefaultAsync(x => x.Channel == channelId);
 
-			return await query.FirstOrDefaultAsync();
+			return await context.LobbyInstances.FirstOrDefaultAsync();
 		}
 
 		public async void RemoveInstance()
@@ -237,7 +236,7 @@ namespace MackMultiBot
 			{
 				await using var context = new BotDatabaseContext();
 
-				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData.Where(x => x.LobbyIdentifier == instance.Identifier));
+				context.LobbyBehaviorData.RemoveRange(context.LobbyBehaviorData);
 
 				context.LobbyInstances.Remove(instance);
 

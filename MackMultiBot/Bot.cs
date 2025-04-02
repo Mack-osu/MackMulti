@@ -44,7 +44,6 @@ namespace MackMultiBot
 			Lobby = new Lobby(this, new LobbyConfiguration()
 			{
 				Name = botConfiguration.LobbyName,
-				Identifier = botConfiguration.LobbyIdentifier,
 				TeamMode = (LobbyFormat)botConfiguration.TeamMode,
 				ScoreMode = (WinCondition)botConfiguration.ScoreMode,
 				Mods = botConfiguration.Mods,

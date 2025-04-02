@@ -11,8 +11,6 @@ namespace MackMultiBot.Database.Entities
 	{
 		public string Name { get; set; } = "Unnamed";
 
-		public string Identifier { get; set; } = string.Empty;
-
 		public LobbyFormat? TeamMode { get; set; } = LobbyFormat.HeadToHead;
 
 		public WinCondition? ScoreMode { get; set; } = WinCondition.Score;

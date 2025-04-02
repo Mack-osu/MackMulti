@@ -12,8 +12,6 @@ namespace MackMultiBot.Database.Entities
 	{
 		public int Id { get; set; }
 
-		public string Identifier { get; set; } = string.Empty;
-
 		/// <summary>
 		/// Channel name in the format "#mp_id"
 		/// </summary>

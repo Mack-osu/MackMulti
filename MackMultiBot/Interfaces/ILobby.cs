@@ -14,7 +14,6 @@ namespace MackMultiBot.Interfaces
 		public Bot Bot { get; init; }
 		public BanchoConnection BanchoConnection { get; }
 		public MultiplayerLobby? MultiplayerLobby { get; }
-		public string LobbyIdentifier { get; set; }
 		public LobbyConfiguration LobbyConfiguration { get; }
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
 		public ITimerHandler? TimerHandler { get; }

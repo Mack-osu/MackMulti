@@ -16,7 +16,6 @@ namespace MackMultiBot.Bancho.Data
 		public string DatabaseDirectory { get; set; } = string.Empty;
 		public string LogDirectory { get; set; } = string.Empty;
 		public string LobbyName { get; set; } = string.Empty;
-		public string LobbyIdentifier { get; set; } = string.Empty;
 		public int TeamMode { get; set; }
 		public int ScoreMode { get; set; }
 		public string[] Mods { get; set; } = [];

@@ -58,9 +58,6 @@ namespace MackMultiBot.Bancho
 					case "LobbyName":
 						config.LobbyName = value;
 						break;
-					case "Identifier":
-						config.LobbyIdentifier = value;
-						break;
 					case "TeamMode":
 						config.TeamMode = int.Parse(value);
 						break;

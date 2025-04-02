@@ -12,9 +12,6 @@ namespace MackMultiBot.Database.Entities
 		public int Id { get; set; }
 
 		[Required]
-		public string LobbyIdentifier { get; set; } = string.Empty;
-
-		[Required]
 		public string BehaviorName { get; set; } = string.Empty;
 
 		/// <summary>

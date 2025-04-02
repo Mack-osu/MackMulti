@@ -33,11 +33,6 @@ namespace MackMultiBot.Behaviors
 
 			commandContext.Reply("!mp clearhost");
 			commandContext.Reply("!mp password v27B62yE6"); // Random letters :)
-			commandContext.Reply("Attention: Lobby will be closing in 30 seconds. Thank you for playing!");
-			await Task.Delay(20000);
-
-			commandContext.Reply("Attention: Lobby will be closing in 10 seconds. Thank you for playing!");
-			await Task.Delay(10000);
 
 			foreach (IMultiplayerPlayer player in context.Lobby.MultiplayerLobby.Players)
 			{
@@ -46,8 +41,8 @@ namespace MackMultiBot.Behaviors
 
 			await Task.Delay(10000);
 
-			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First(x => x.Identifier == context.Lobby.LobbyIdentifier));
-			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData.Where(x => x.LobbyIdentifier == context.Lobby.LobbyIdentifier));
+			databaseCtx.LobbyInstances.Remove(databaseCtx.LobbyInstances.First());
+			databaseCtx.LobbyBehaviorData.RemoveRange(databaseCtx.LobbyBehaviorData);
 
 			await databaseCtx.SaveChangesAsync();
 
