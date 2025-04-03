@@ -20,11 +20,13 @@ namespace MackMultiBot.Database.Databases
 		{
 			string formattedUsername = username.ToIrcNameFormat();
 			return _dbContext.Users
-				.AsEnumerable() // Pulls data into memory
+				.AsEnumerable()
 				.FirstOrDefault(x => x.Name.ToIrcNameFormat() == formattedUsername);
 		}
 
-		public async Task<IReadOnlyList<User>> GetTopUsersByPlayTime(int count)
+        #region Lobby Statistics
+
+        public async Task<IReadOnlyList<User>> GetTopUsersByPlayTime(int count)
 		{
 			return await _dbContext.Users.OrderByDescending(x => x.Playtime).
 				Take(count).
@@ -65,7 +67,44 @@ namespace MackMultiBot.Database.Databases
 			return TimeSpan.FromSeconds(await _dbContext.Users.SumAsync(x => x.Playtime));
 		}
 
-		async Task<User> CreateUser(string username)
+        #endregion
+
+		public async Task AssignUserId(string username, int userId)
+        {
+			var user = await FindOrCreateUser(username);
+
+            if (user.UserId != 0)
+				return;
+
+            Logger.Log(LogLevel.Info, $"UserDb: Assigning user ID '{userId}' to user '{username}'");
+
+            user.UserId = userId;
+
+			await SaveAsync();
+
+            UpdateUsernameFromOsuId(userId);
+		}
+
+		async void UpdateUsernameFromOsuId(int userId)
+		{
+			if (userId == 0)
+				return;
+
+			Logger.Log(LogLevel.Info, $"UserDb: Updating username of player with ID '{userId}'");
+
+			var query = _dbContext.Users.Where(x => x.UserId == userId);
+
+			if (query.Count() >= 2)
+            {
+				query = query.OrderBy(x => x.Id);
+                query.First().Name = query.Last().Name;
+				_dbContext.Remove(query.Last());
+			}
+
+			await SaveAsync();
+		}
+
+        async Task<User> CreateUser(string username)
 		{
 			var user = new User()
 			{
@@ -101,7 +140,7 @@ namespace MackMultiBot.Database.Databases
 
 		public async void UpdateUserAutoskipStatus(User user, bool status)
 		{
-			user = FindOrCreateUser(user.Name).Result; // For some reason it's finding an empty user entry without this line.
+			user = await FindOrCreateUser(user.Name); // For some reason it's finding an empty user entry without this line.
 
 			user.AutoSkip = status;
 			await SaveAsync();

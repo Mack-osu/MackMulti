@@ -13,7 +13,9 @@ namespace MackMultiBot.Database
 		public DbSet<Score> Scores => Set<Score>();
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
+        {
+			//optionsBuilder.UseSqlite("Data Source=C:/Coding/MackMulti/Builds/Test/data.db");
+
 			if (ConnectionString == null)
 				throw new InvalidOperationException("No connection string set");
 

@@ -340,9 +340,14 @@ namespace MackMultiBot.Behaviors
 
 			await context.Lobby.Bot.OsuApiClient.EnsureAccessTokenAsync();
 
+			await using var userDb = new UserDb();
+
 			for (int i = 0; i < players.Count; i++)
 			{
-				int index = i;
+				// We are sure the player has an Id at this point, update database entries
+				await userDb.AssignUserId(players[i].Name, (int)players[i].Id!);
+
+                int index = i;
 
 				getScoreTasks.Add(Task.Run(async () =>
 				{

@@ -11,14 +11,10 @@ namespace MackMultiBot.Database.Entities
 	{
 		public int Id { get; set; }
 		public required string Name { get; set; }
+		public int UserId { get; set; } = 0;
 		public bool IsAdmin { get; set; }
 		public bool AutoSkip { get; set; }
-
-		/// <summary>
-		/// Playtime in seconds
-		/// </summary>
 		public int Playtime { get; set; }
-
 		public int Playcount { get; set; }
 		public int MatchWins { get; set; }
 	}

@@ -19,7 +19,6 @@ namespace MackMultiBot.Behaviors
 	{
 		readonly BehaviorDataProvider<HostQueueBehaviorData> _dataProvider = new(context.Lobby);
 		private HostQueueBehaviorData Data => _dataProvider.Data;
-
 		public async Task SaveData() => await _dataProvider.SaveData();
 
 		#region Commands
@@ -132,7 +131,7 @@ namespace MackMultiBot.Behaviors
 		public void Initialize()
 		{
 			Logger.Log(LogLevel.Info, "HostQueueBehavior: Initializing");
-			Data.Queue = new();
+			Data.Queue = [];
 		}
 
 		[BotEvent(BotEventType.SettingsUpdated)] // Makes sure queue is valid after bot restart as players might have left during downtime
