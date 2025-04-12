@@ -7,6 +7,7 @@ using MackMultiBot.Interfaces;
 using OsuSharp.Models.Beatmaps;
 using MackMultiBot.Logging;
 using MackMultiBot.Database.Databases;
+using System.Linq;
 
 namespace MackMultiBot.Behaviors
 {
@@ -21,13 +22,22 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "timeleft")]
 		public void OnTimeLeftCommand(CommandContext commandContext)
 		{
-			if (commandContext.Lobby?.MultiplayerLobby == null || !commandContext.Lobby.MultiplayerLobby.MatchInProgress)
+			if (commandContext.Lobby?.MultiplayerLobby == null || !commandContext.Lobby.MultiplayerLobby.MatchInProgress || commandContext.Player == null)
 				return;
 
-			TimeSpan timePassed = DateTime.UtcNow - Data.LastMatchStartTime;
 
-			commandContext.Reply($"Estimated time left of current map: {(Data.BeatmapInfo.Length - timePassed):m\\:ss}");
-		}
+            TimeSpan timePassed = DateTime.UtcNow - Data.LastMatchStartTime;
+
+			string message = $"Estimated time left of current map: {(Data.BeatmapInfo.Length - timePassed):m\\:ss}";
+
+            if (commandContext.Args.Length >= 1 && commandContext.Args[0].ToLower() == "ping")
+			{
+				Data.PlayersToPing.Add(commandContext.Player.Name.ToIrcNameFormat());
+                message += ". You will be pinged when the match has finished.";
+			}
+
+            commandContext.Reply(message);
+        }
 
 		[BotEvent(BotEventType.Command, "rules")]
 		public void OnRulesCommand(CommandContext commandContext)
@@ -135,6 +145,20 @@ namespace MackMultiBot.Behaviors
 		public void OnMatchStarted()
 		{
 			Data.LastMatchStartTime = DateTime.UtcNow;
+		}
+
+		[BotEvent(BotEventType.MatchFinished)]
+		public void OnMatchFinished()
+		{
+			var lobbyName = context.Lobby.LobbyConfiguration.Name;
+
+			foreach (var username in Data.PlayersToPing)
+			{
+				context.Lobby.BanchoConnection.MessageHandler.SendMessage($"{username}", $"The match in {lobbyName}] has finished, you will receive an invite shortly.");
+				context.MultiplayerLobby.InviteAsync(username);
+			}
+
+			Data.PlayersToPing.Clear();
 		}
 
 		#endregion

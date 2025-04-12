@@ -12,7 +12,7 @@ namespace MackMultiBot
 		public MultiplayerLobby MultiplayerLobby => Lobby.MultiplayerLobby!;
 
 		/// <summary>
-		/// The channel name of the multiplayer lobby, formatted as "#mp_channel-id".
+		/// The channel name of the multiplayer lobby, formatted as "#mp_channelId".
 		/// </summary>
 		public string Channel => Lobby.MultiplayerLobby!.ChannelName;
 

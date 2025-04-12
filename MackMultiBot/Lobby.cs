@@ -6,13 +6,7 @@ using MackMultiBot.Database;
 using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MackMultiBot.Logging;
-using MackMultiBot.Bancho.Data;
 
 namespace MackMultiBot
 {
@@ -31,7 +25,7 @@ namespace MackMultiBot
 
 		public ITimerHandler? TimerHandler { get; private set; }
 
-		private string _channelId = string.Empty;
+		public string ChannelId { get; private set; } = string.Empty;
 
 		private bool _shouldCreateNewInstance;
 
@@ -70,7 +64,7 @@ namespace MackMultiBot
 			if (previousInstance != null && !IsRecreation)
 				existingChannel = previousInstance.Channel;
 
-			_channelId = existingChannel;
+			ChannelId = existingChannel;
 			_shouldCreateNewInstance = existingChannel.Length == 0;
 
 			if (!_shouldCreateNewInstance)
@@ -100,7 +94,7 @@ namespace MackMultiBot
 			if (!_shouldCreateNewInstance)
 				return;
 
-			_channelId = lobby.ChannelName;
+			ChannelId = lobby.ChannelName;
 			_shouldCreateNewInstance = false;
 
 			MultiplayerLobby = new MultiplayerLobby(BanchoConnection.BanchoClient, long.Parse(lobby.ChannelName[4..]), lobby.ChannelName);
@@ -121,7 +115,7 @@ namespace MackMultiBot
 			}
 
 			// Not the channel we were trying to join, ignore
-			if (channel.ChannelName != _channelId)
+			if (channel.ChannelName != ChannelId)
 				return;
 
 			// We will be waiting for the lobby creation event instead
@@ -159,9 +153,9 @@ namespace MackMultiBot
 			}
 
 			// Not the channel we were trying to join, ignore
-			if (attemptedChannel != _channelId)
+			if (attemptedChannel != ChannelId)
 			{
-				Logger.Log(LogLevel.Trace, $"Lobby: Ignoring channel {attemptedChannel}, not the channel we were trying to join, ({_channelId}).");
+				Logger.Log(LogLevel.Trace, $"Lobby: Ignoring channel {attemptedChannel}, not the channel we were trying to join, ({ChannelId}).");
 				return;
 			}
 
@@ -198,7 +192,7 @@ namespace MackMultiBot
 
 				context.LobbyInstances.Add(new LobbyInstance()
 				{
-					Channel = _channelId
+					Channel = ChannelId
 				});
 
 				await context.SaveChangesAsync();
@@ -206,7 +200,7 @@ namespace MackMultiBot
 
 			await TimerHandler.Start();
 			await BehaviorEventProcessor.OnInitializeEvent();
-			_messager = new(BanchoConnection.MessageHandler, _channelId);
+			_messager = new(BanchoConnection.MessageHandler, ChannelId);
 			_messager.Start();
 
 			Logger.Log(LogLevel.Trace, "Lobby: Lobby instance built successfully");
@@ -229,7 +223,7 @@ namespace MackMultiBot
 
 		public async void RemoveInstance()
 		{
-			var instance = await GetRecentRoomInstance(_channelId);
+			var instance = await GetRecentRoomInstance(ChannelId);
 
 			// Remove the lobby instance we failed to join from database.
 			if (instance != null)

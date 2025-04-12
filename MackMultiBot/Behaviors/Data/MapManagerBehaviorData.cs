@@ -16,5 +16,7 @@ namespace MackMultiBot.Behaviors.Data
 		public int LastBotAppliedBeatmapId { get; set; }
 
 		public DateTime LastMatchStartTime { get; set; } = DateTime.UtcNow;
+
+		public List<string> PlayersToPing { get; set; } = [];
 	}
 }

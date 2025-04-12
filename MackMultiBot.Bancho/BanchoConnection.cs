@@ -28,8 +28,7 @@ namespace MackMultiBot.Bancho
         CancellationTokenSource? _cancellationTokenSource;
         readonly BotConfiguration _banchoConfiguration;
 
-        // Temporarily public for testing purposes
-        public ConnectionWatch? _connectionWatch;
+        ConnectionWatch? _connectionWatch;
 
         public BanchoConnection(BotConfiguration banchoClientConfiguration)
         {

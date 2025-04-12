@@ -17,9 +17,7 @@ namespace MackMultiBot.Bancho
 
 		public event Action? OnConnectionLost;
 
-		// Temporarily public for testing purposes
-		public TcpClient _tcpClient = tcpClient;
-		//readonly TcpClient _tcpClient = tcpClient;
+		readonly TcpClient _tcpClient = tcpClient;
 
 		readonly IMessageHandler _messageHandler = messageHandler;
 
