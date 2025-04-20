@@ -14,4 +14,4 @@ Logger.LogFilePath = $"{config.LogDirectory}/Log.txt";
 Bot Bot = new(config);
 await Bot.StartAsync();
 
-Console.ReadLine();
+await Task.Delay(-1);

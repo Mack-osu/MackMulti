@@ -24,8 +24,6 @@ namespace MackMultiBot
 		public Action<string>? OnBanchoChannelJoinFailed;
 		public Action<IMultiplayerLobby>? OnBanchoLobbyCreated;
 
-		// This class will also be used to handle creating and starting lobbies.
-
 		public async Task StartAsync()
 		{
 			Logger.Log(LogLevel.Trace, "Bot starting");

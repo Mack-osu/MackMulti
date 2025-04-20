@@ -129,7 +129,7 @@ namespace MackMultiBot.Behaviors
 			OnMatchFinished();
 		}
 
-		// Stolen from matte :)
+		// Stolen from: https://github.com/matte-ek/BanchoMultiplayerBot/tree/master
 		void EnsureMatchMods(LobbyConfiguration configuration)
 		{
 			if (configuration.Mods == null)
@@ -137,8 +137,6 @@ namespace MackMultiBot.Behaviors
 				return;
 			}
 
-			// No, I can't read this easily either, but it's short. :)
-			// Good example of bad code, but it's not worth refactoring.
 			Mods desiredMods = configuration.Mods.Aggregate<string, Mods>(0, (current, modName) => current | (Mods)Enum.Parse(typeof(Mods), modName));
 
 			if (context.MultiplayerLobby.Mods == desiredMods)
@@ -161,13 +159,9 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"!mp mods {GenerateModsCommand(modsCommandNonSpacing)}");
 		}
 
-		// Stolen from matte :)
+		// Stolen from: https://github.com/matte-ek/BanchoMultiplayerBot/tree/master
 		private static string GenerateModsCommand(string modsCommandNonSpacing)
 		{
-			// TODO: Move this madness elsewhere, it probably shouldn't be here.
-			// We need to translate the mods command to the format that bancho expects.
-			// For example "!mp mods HR HD"
-
 			var modsCommand = "";
 			bool newMod = false;
 
@@ -189,5 +183,11 @@ namespace MackMultiBot.Behaviors
 		}
 
 		#endregion
+
+		[BotEvent(BotEventType.TimerFinished, "LobbyWatchTimer")]
+		public void OnWatchTimerElapsed()
+		{
+			OnMatchFinished();
+		}
 	}
 }

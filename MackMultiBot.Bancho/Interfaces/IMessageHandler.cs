@@ -10,8 +10,9 @@ namespace MackMultiBot.Bancho.Interfaces
 	public interface IMessageHandler
 	{
         public bool IsRunning { get; }
+		public string ChannelId { get; set; }
 
-        public event Action<IPrivateIrcMessage>? OnMessageReceived;
+		public event Action<IPrivateIrcMessage>? OnMessageReceived;
         public event Action<IPrivateIrcMessage>? OnMessageSent;
 
         public void Start();

@@ -16,6 +16,12 @@ try
 		string? message = Console.ReadLine();
 		if (message != null)
 		{
+			if (!pipeClient.IsConnected)
+			{
+				Console.WriteLine("Messager App disconnected, attempting reconnect");
+				pipeClient.Connect();
+			}
+
 			writer.WriteLine(message);
 		}
 	}

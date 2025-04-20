@@ -129,7 +129,6 @@ namespace MackMultiBot.Bancho
 
 		private async void OnConnectionLost()
 		{
-            
 			IsConnected = false;
 
 			_cancellationTokenSource?.Cancel();

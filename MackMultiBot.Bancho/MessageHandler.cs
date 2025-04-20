@@ -10,8 +10,9 @@ namespace MackMultiBot.Bancho
 	public class MessageHandler(IBanchoConnection banchoConnection) : IMessageHandler
 	{
         public bool IsRunning { get; private set; } = false;
+        public string ChannelId { get; set; } = "";
 
-		public event Action<IPrivateIrcMessage>? OnMessageReceived;
+        public event Action<IPrivateIrcMessage>? OnMessageReceived;
 		public event Action<IPrivateIrcMessage>? OnMessageSent;
 
         private BlockingCollection<Message> _messageQueue = new(50);
@@ -95,7 +96,10 @@ namespace MackMultiBot.Bancho
 		}
 
         private void BanchoOnPrivateMessageReceived(IPrivateIrcMessage e)
-        {   
+		{
+			if (!e.IsDirect && e.Recipient != ChannelId)
+				return;
+
             if (e.IsBanchoBotMessage)
 				Logger.Log(LogLevel.Bancho, $"{e.Sender}: {e.Content}");
 			else
@@ -106,7 +110,9 @@ namespace MackMultiBot.Bancho
 
         private void BanchoOnPrivateMessageSent(IPrivateIrcMessage e)
 		{
-			//Logger.Log(LogLevel.Chat, $"[{e.Recipient}] {e.Sender}: {e.Content}");
+			if (!e.IsDirect && e.Recipient != ChannelId)
+				return;
+
 			Logger.Log(LogLevel.Chat, $"{e.Sender}: {e.Content}");
 
 			OnMessageSent?.Invoke(e);

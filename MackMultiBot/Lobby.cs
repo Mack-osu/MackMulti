@@ -27,7 +27,7 @@ namespace MackMultiBot
 
 		public string ChannelId { get; private set; } = string.Empty;
 
-		private bool _shouldCreateNewInstance;
+		bool _shouldCreateNewInstance;
 
 		public Lobby(Bot bot, LobbyConfiguration lobbyConfig)
 		{
@@ -183,7 +183,7 @@ namespace MackMultiBot
 			BehaviorEventProcessor.RegisterBehavior("LobbyWatchBehavior");
 
 			BehaviorEventProcessor.Start();
-			                                                             
+			
 			// Ensure database entry
 			var recentRoomInstance = await GetRecentRoomInstance();
 			if (recentRoomInstance == null)
@@ -201,6 +201,7 @@ namespace MackMultiBot
 			await TimerHandler.Start();
 			await BehaviorEventProcessor.OnInitializeEvent();
 			_messager = new(BanchoConnection.MessageHandler, ChannelId);
+			BanchoConnection.MessageHandler.ChannelId = ChannelId;
 			_messager.Start();
 
 			Logger.Log(LogLevel.Trace, "Lobby: Lobby instance built successfully");
@@ -209,11 +210,6 @@ namespace MackMultiBot
 		async Task<LobbyInstance?> GetRecentRoomInstance(string? channelId = null)
 		{
 			await using var context = new BotDatabaseContext();
-			//var query = context.LobbyInstances
-			//	.OrderByDescending(x => x.Id).ToListAsync();
-
-			//if (channelId != null)
-			//	query = query.Where(x => x.Channel == channelId);
 
 			if (channelId != null)
 				return await context.LobbyInstances.FirstOrDefaultAsync(x => x.Channel == channelId);
