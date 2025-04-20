@@ -56,7 +56,8 @@ namespace MackMultiBot
 					DifficultyMargin = botConfiguration.DifficultyMargin,
 					MinimumMapLength = botConfiguration.MinimumMapLength,
 					MaximumMapLength = botConfiguration.MaximumMapLength
-				}
+				},
+				LobbyAdminIrcUser = botConfiguration.IrcUsername
 			});
 
 			Logger.Log(LogLevel.Info, $"Bot: Loaded lobby configuration for lobby '{botConfiguration.LobbyName}'");

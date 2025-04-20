@@ -224,7 +224,7 @@ namespace MackMultiBot.Behaviors
 
 		#endregion
 
-		#region Lobby Stats
+			#region Lobby Stats
 
 		[BotEvent(BotEventType.Command, "totalplaytime")]
 		public async void OnTotalPlaytimeCommand(CommandContext commandContext)
@@ -260,13 +260,73 @@ namespace MackMultiBot.Behaviors
 				await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapSetAsync(top3Beatmaps[2]!.SetId))
 			];
 
-			if (top3BeatmapSets.Length < 3)
+			if (top3BeatmapSets.Length < 3 || top3BeatmapSets.Any(x => x == null))
 				return;
 
 			commandContext.Reply($"#1: [https://osu.ppy.sh/b/{top3MostPlayed[0].BeatmapId} {top3BeatmapSets[0]!.Title}] ({top3MostPlayed[0].PlayCount} times) | " +
 								$"#2: [https://osu.ppy.sh/b/{top3MostPlayed[1].BeatmapId} {top3BeatmapSets[1]!.Title}] ({top3MostPlayed[1].PlayCount} times) | " +
 								$"#3: [https://osu.ppy.sh/b/{top3MostPlayed[2].BeatmapId} {top3BeatmapSets[2]!.Title}]({top3MostPlayed[2].PlayCount} times).");
 
+		}
+
+		#endregion
+
+			#region Other
+
+		[BotEvent(BotEventType.Command, "admin")]
+		public void OnAdminCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player == null)
+				return;
+
+			var userDb = new UserDb();
+
+			if (commandContext.Player.Name.ToIrcNameFormat() == context.Lobby.LobbyConfiguration.LobbyAdminIrcUser)
+			{
+				if (commandContext.Args.Length > 0)
+				{
+					var user = userDb.FindUser(commandContext.Args[0]);
+
+					if (user == null)
+					{
+						commandContext.Reply($"User '{commandContext.Args[0]}' not found.");
+						return;
+					}
+
+					userDb.UpdateUserAdminStatus(user, true);
+
+					commandContext.Reply($"User {user.Name} has been promoted to lobby administrator");
+					return;
+				}
+			}
+		}
+
+		[BotEvent(BotEventType.Command, "removeadmin")]
+		public void OnRemoveAdminCommand(CommandContext commandContext)
+		{
+			if (commandContext.Player == null)
+				return;
+
+			var userDb = new UserDb();
+
+			if (commandContext.Player.Name.ToIrcNameFormat() == context.Lobby.LobbyConfiguration.LobbyAdminIrcUser)
+			{
+				if (commandContext.Args.Length > 0)
+				{
+					var user = userDb.FindUser(commandContext.Args[0]);
+
+					if (user == null)
+					{
+						commandContext.Reply($"User '{commandContext.Args[0]}' not found.");
+						return;
+					}
+
+					userDb.UpdateUserAdminStatus(user, false);
+
+					commandContext.Reply($"User {user.Name}'s admin privileges have been removed indefinitely.");
+					return;
+				}
+			}
 		}
 
 		#endregion
@@ -315,7 +375,7 @@ namespace MackMultiBot.Behaviors
 		public async Task OnMatchFinished()
 		{
 			await context.MultiplayerLobby.RefreshSettingsAsync();
-			await Task.Delay(10000);
+			await Task.Delay(5000);
 
 			await Task.Run(async () =>
 			{
@@ -323,7 +383,7 @@ namespace MackMultiBot.Behaviors
 
 				await StoreMapData(recentScores);
 				await StorePlayerFinishData(recentScores);
-				//await AnnounceLeaderboardResults(recentScores);
+				// Map leaderboard results?
 			});
 		}
 

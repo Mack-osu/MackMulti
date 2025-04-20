@@ -22,5 +22,7 @@ namespace MackMultiBot.Database.Entities
 		public string? Password { get; set; } = string.Empty;
 
 		public LobbyRuleConfiguration RuleConfig { get; set; } = new();
+
+		public string LobbyAdminIrcUser { get; set; } = string.Empty;
 	}
 }

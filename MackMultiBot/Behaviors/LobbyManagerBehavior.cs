@@ -187,6 +187,9 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.TimerFinished, "LobbyWatchTimer")]
 		public void OnWatchTimerElapsed()
 		{
+			// Temporary direct setting of name until I add functionality to await an !mp settings call.
+			context.SendMessage($"!mp name {context.Lobby.LobbyConfiguration.Name}");
+
 			OnMatchFinished();
 		}
 	}
