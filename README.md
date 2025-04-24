@@ -1,4 +1,4 @@
-![alt text](https://raw.githubusercontent.com/Mack-osu/MackMulti/refs/heads/main/MackMultiBot/MackMulti.ico?token=GHSAT0AAAAAADAZGQF3MIAHMIA5FNBC5NO42AKJ2YA) 
+![alt text](https://github.com/Mack-osu/MackMulti/blob/main/MackMultiBot/MackMulti.ico?raw=true) 
 
 # MackMulti
 osu! Multiplayer bot written in C#
