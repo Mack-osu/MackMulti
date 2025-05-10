@@ -170,7 +170,7 @@ namespace MackMultiBot.Behaviors
 			var beatmapSet = (beatmapInfo as Beatmap).Set;
 			var roundedSr = Math.Round(difficultyAttributes.DifficultyRating, 2);
 
-			context.SendMessage($"[https://osu.ppy.sh/b/{beatmapInfo.Id} {beatmapSet?.Artist} - {beatmapSet?.Title} [{beatmapInfo.Version}]] - [https://beatconnect.io/b/{beatmapInfo.Id} Beatconnect]");
+			context.SendMessage($"[https://osu.ppy.sh/b/{beatmapInfo.Id} {beatmapSet?.Artist} - {beatmapSet?.Title} [{beatmapInfo.Version}]] - [https://catboy.best/d/{beatmapInfo.Id} Mino]");
 			context.SendMessage($"Star Rating: {roundedSr} | Length: {beatmapInfo.TotalLength:mm\\:ss} | BPM: {beatmapInfo.BPM} | {beatmapInfo.Status}");
 			context.SendMessage($"AR: {beatmapInfo.ApproachRate} | OD: {beatmapInfo.OverallDifficulty} | CS: {beatmapInfo.CircleSize} | HP: {beatmapInfo.HealthDrain}");
 		}

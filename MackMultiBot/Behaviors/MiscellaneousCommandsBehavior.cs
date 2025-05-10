@@ -424,10 +424,7 @@ namespace MackMultiBot.Behaviors
 
 		async Task StoreMapData(IReadOnlyList<ScoreResult> recentScores)
 		{
-			if (Data.LastPlayedBeatmapInfo == null)
-			{
-				return;
-			}
+			if (Data.LastPlayedBeatmapInfo == null || Data.LastPlayedBeatmapInfo.Id == 0) return;
 
 			await using var matchDb = new MatchDb();
 
@@ -454,7 +451,7 @@ namespace MackMultiBot.Behaviors
 				{
 					var score = result.Score;
 
-					if (score == null)
+					if (score == null || score.Beatmap?.Id != map.BeatmapId)
 						continue;
 
 					var user = await userDb.FindOrCreateUser(result.Player.Name);

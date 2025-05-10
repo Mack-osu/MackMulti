@@ -17,6 +17,7 @@ namespace MackMultiBot.Interfaces
 		public LobbyConfiguration LobbyConfiguration { get; }
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; }
 		public ITimerHandler? TimerHandler { get; }
+		public IVoteHandler? VoteHandler { get; }
 
         public string ChannelId { get; }
 

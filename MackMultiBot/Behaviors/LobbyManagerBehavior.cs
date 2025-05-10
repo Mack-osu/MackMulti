@@ -64,7 +64,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "help")]
 		public void OnHelpCommand(CommandContext commandContext)
 		{
-			commandContext.Reply($"All available command can be found on [https://osu.ppy.sh/users/11584934 my profile]");
+			commandContext.Reply($"All available commands can be found on [https://osu.ppy.sh/users/11584934 my profile]");
 		}
 
 		#endregion

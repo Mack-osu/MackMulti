@@ -1,10 +1,5 @@
 ﻿using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ITimer = MackMultiBot.Interfaces.ITimer;
 using Timer = MackMultiBot.Data.Timer;
 

@@ -7,6 +7,7 @@ using MackMultiBot.Database.Entities;
 using MackMultiBot.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using MackMultiBot.Logging;
+using MackMultiBot.Services;
 
 namespace MackMultiBot
 {
@@ -24,6 +25,7 @@ namespace MackMultiBot
 		public LobbyConfiguration LobbyConfiguration { get; private set; }
 
 		public ITimerHandler? TimerHandler { get; private set; }
+		public IVoteHandler? VoteHandler { get; private set; }
 
 		public string ChannelId { get; private set; } = string.Empty;
 
@@ -173,6 +175,7 @@ namespace MackMultiBot
 			// Initialize behaviors
 			BehaviorEventProcessor = new(this);
 			TimerHandler = new TimerHandler(this);
+			VoteHandler = new VoteHandler(this);
 
 			BehaviorEventProcessor.RegisterBehavior("TestBehavior");
 			BehaviorEventProcessor.RegisterBehavior("HostQueueBehavior");
@@ -241,6 +244,8 @@ namespace MackMultiBot
 				await TimerHandler.Stop();
 				TimerHandler = null;
 			}
+
+			VoteHandler = null;
 
 			BehaviorEventProcessor?.Stop();
 			BehaviorEventProcessor = null;
