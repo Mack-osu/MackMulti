@@ -43,7 +43,21 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "skip")]
 		public async Task OnSkipCommand(CommandContext commandContext)
 		{
-			if (Data.Queue[0] == commandContext.Player?.Name)
+			if (commandContext.Player == null) return;
+
+			if (Data.Queue[0] == commandContext.Player.Name)
+			{
+				await SkipHost();
+				return;
+			}
+
+			if (context.Lobby.VoteHandler == null)
+			{
+				Logger.Log(LogLevel.Warn, "HostQueueBehavior: No VoteHandler found on attempted skip vote");
+				return;
+			}
+
+			if (context.Lobby.VoteHandler.FindOrCreateVote("skip", "Skip the host").AddPlayerVote(commandContext.Player))
 				await SkipHost();
 		}
 
@@ -216,6 +230,8 @@ namespace MackMultiBot.Behaviors
 				return;
 
 			Logger.Log(LogLevel.Trace, "HostQueueBehavior: Skipping to Next Host");
+
+			context.Lobby.VoteHandler?.FindOrCreateVote("skip", "Skip the host").Abort();
 
 			await using var userDb = new UserDb();
 

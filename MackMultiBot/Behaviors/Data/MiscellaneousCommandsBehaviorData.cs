@@ -14,13 +14,13 @@ namespace MackMultiBot.Behaviors.Data
 	{
 		public BeatmapInformation? LastPlayedBeatmapInfo { get; set; }
 
-		public List<PlayerJoinRecord> PlayerTimeRecords { get; set; } = [];
+		public List<PlayerTimeRecord> PlayerTimeRecords { get; set; } = [];
 
-		public record PlayerJoinRecord
+		public record PlayerTimeRecord
 		{
 			public string PlayerName { get; init; } = string.Empty;
 
-			public DateTime JoinTime { get; init; }
+			public DateTime TrackingStartTime { get; init; }
 		}
 	}
 }

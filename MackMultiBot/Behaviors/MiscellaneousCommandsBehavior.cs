@@ -14,6 +14,7 @@ using OsuSharp.Models.Beatmaps;
 using OsuSharp.Models.Scores;
 using OsuSharp.Models.Users;
 using System.Globalization;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace MackMultiBot.Behaviors
@@ -56,7 +57,7 @@ namespace MackMultiBot.Behaviors
 
 			if (record != null)
 			{
-				currentPlaytime = DateTime.UtcNow - record.JoinTime;
+				currentPlaytime = DateTime.UtcNow - record.TrackingStartTime;
 				totalPlaytime += currentPlaytime;
 			}
 
@@ -93,7 +94,7 @@ namespace MackMultiBot.Behaviors
 			for (int i = 0; i < playTimeTop4.Count; i++)
 			{
 				var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == playTimeTop4[i].Name);
-				users.Add(playTimeTop4[i].Name, record == null ? playTimeTop4[i].Playtime : playTimeTop4[i].Playtime + (int)(DateTime.UtcNow - record.JoinTime).TotalSeconds);
+				users.Add(playTimeTop4[i].Name, record == null ? playTimeTop4[i].Playtime : playTimeTop4[i].Playtime + (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds);
 			}
 
 			commandContext.Reply($"#1: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
@@ -338,10 +339,10 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.PlayerJoined)]
 		public void OnPlayerJoined(MultiplayerPlayer player)
 		{
-			Data.PlayerTimeRecords.Add(new MiscellaneousCommandsBehaviorData.PlayerJoinRecord
+			Data.PlayerTimeRecords.Add(new MiscellaneousCommandsBehaviorData.PlayerTimeRecord
 			{
 				PlayerName = player.Name,
-				JoinTime = DateTime.UtcNow
+				TrackingStartTime = DateTime.UtcNow
 			});
 		}
 
@@ -356,11 +357,15 @@ namespace MackMultiBot.Behaviors
 
 			var user = await userDb.FindOrCreateUser(player.Name);
 
-			user.Playtime += (int)(DateTime.UtcNow - record.JoinTime).TotalSeconds;
+			user.Playtime += (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds;
 
 			await userDb.SaveAsync();
 
 			Data.PlayerTimeRecords.Remove(record);
+
+			// this should never be required, but clear records just in case.
+			if (context.MultiplayerLobby.PlayerCount == 0)
+				await ResetTimeRecords();
 		}
 
 		[BotEvent(BotEventType.MatchStarted)]
@@ -383,8 +388,38 @@ namespace MackMultiBot.Behaviors
 
 				await StoreMapData(recentScores);
 				await StorePlayerFinishData(recentScores);
+				await ResetTimeRecords();
 				// Map leaderboard results?
 			});
+		}
+
+		public async Task ResetTimeRecords()
+		{
+			Logger.Log(LogLevel.Trace, $"MiscellaneousCommandsBehavior: Resetting playtime records for {Data.PlayerTimeRecords.Count} users");
+
+			await using var userDb = new UserDb();
+
+			// Updates user stats from all active join records
+			foreach (var record in Data.PlayerTimeRecords)
+			{
+				var user = await userDb.FindOrCreateUser(record.PlayerName);
+
+				user.Playtime += (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds;
+			}
+
+			await userDb.SaveAsync();
+			Data.PlayerTimeRecords.Clear();
+
+			// Recreates join records for all players currently in lobby.
+			foreach (var player in context.MultiplayerLobby.Players)
+			{
+				Data.PlayerTimeRecords.Add(new MiscellaneousCommandsBehaviorData.PlayerTimeRecord
+				{
+					PlayerName = player.Name,
+					TrackingStartTime = DateTime.UtcNow
+				});
+			}
+
 		}
 
 		#endregion

@@ -8,9 +8,13 @@ namespace MackMultiBot.Behaviors
 		/// DIsplays all players in lobby, including their osu! user ID.
 		/// </summary>
 		[BotEvent(BotEventType.Command, "test")]
-		public void OnTestCommand(CommandContext commandContext)
+		public async void OnTestCommand(CommandContext commandContext)
 		{
-			commandContext.Reply($"Lobby Players: {string.Join(", ", commandContext.Lobby?.MultiplayerLobby?.Players.Select(x => x.Name + $"[{(x.Id == null ? "No ID" : x.Id)}]").ToList()!)}");
+			//commandContext.Reply($"Lobby Players: {string.Join(", ", commandContext.Lobby?.MultiplayerLobby?.Players.Select(x => x.Name + $"[{(x.Id == null ? "No ID" : x.Id)}]").ToList()!)}");
+			context.SendMessage("!mp close");
+			context.Lobby.RemoveInstance();
+			await context.Lobby.ConnectOrCreateAsync(true);
+
 		}
 
 		[BotEvent(BotEventType.Command, "testvote")]

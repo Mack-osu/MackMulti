@@ -12,6 +12,9 @@ namespace MackMultiBot.Behaviors
 		public StartBehavior(BehaviorEventContext context)
 		{
 			_context = context;
+
+			if (_context.Lobby.TimerHandler == null) return;
+
 			_autoStartTimer = _context.Lobby.TimerHandler.FindOrCreateTimer("AutoStartTimer");
 		}
 
@@ -21,8 +24,15 @@ namespace MackMultiBot.Behaviors
 			if (commandContext.Player == null)
 				return;
 
+			// Start vote
 			if (commandContext.Player.Name != _context.Lobby?.MultiplayerLobby?.Host?.Name)
+			{
+				if (commandContext.Lobby?.VoteHandler != null)
+					if (commandContext.Lobby.VoteHandler.FindOrCreateVote("start", "Start the match").AddPlayerVote(commandContext.Player))
+						commandContext.Reply($"!mp start");
+
 				return;
+			}
 
 			if (commandContext.Args.Length == 0)
 			{

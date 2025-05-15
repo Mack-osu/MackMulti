@@ -97,6 +97,12 @@ namespace MackMultiBot.Behaviors
 			EnsureMatchMods(context.Lobby.LobbyConfiguration);
 		}
 
+		[BotEvent(BotEventType.MatchStarted)]
+		public void OnMatchStarted()
+		{
+			context.Lobby.VoteHandler?.FindOrCreateVote("start", "Start the match").Abort();
+		}
+
 		#endregion
 
 		#region Lobby Management
