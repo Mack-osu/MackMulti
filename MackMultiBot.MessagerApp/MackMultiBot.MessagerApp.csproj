@@ -13,4 +13,8 @@
     <Content Include="MessagerApp.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NetMQ" Version="4.0.1.15" />
+  </ItemGroup>
+
 </Project>

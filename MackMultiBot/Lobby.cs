@@ -204,8 +204,6 @@ namespace MackMultiBot
 			await TimerHandler.Start();
 			await BehaviorEventProcessor.OnInitializeEvent();
 
-			_messager?.Stop();
-
 			_messager = new(BanchoConnection.MessageHandler, ChannelId);
 			BanchoConnection.MessageHandler.ChannelId = ChannelId;
 			_messager.Start();
@@ -252,8 +250,6 @@ namespace MackMultiBot
 
 			BehaviorEventProcessor?.Stop();
 			BehaviorEventProcessor = null;
-
-			_messager.Stop();
 
 			Logger.Log(LogLevel.Info, "Lobby: Lobby instance shut down successfully.");
 		}
