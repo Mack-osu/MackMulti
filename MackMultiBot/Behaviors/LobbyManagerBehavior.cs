@@ -193,6 +193,11 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.TimerFinished, "LobbyWatchTimer")]
 		public void OnWatchTimerElapsed()
 		{
+			BehaviorDataProvider<LobbyWatchBehaviorData> _dataProvider = new(context.Lobby);
+
+			if (context.MultiplayerLobby.MatchInProgress || (DateTime.UtcNow - _dataProvider.Data.RecentEventTime).TotalMinutes < 2.5)
+				return;
+
 			// Temporary direct setting of name until I add functionality to await an !mp settings call.
 			context.SendMessage($"!mp name {context.Lobby.LobbyConfiguration.Name}");
 
