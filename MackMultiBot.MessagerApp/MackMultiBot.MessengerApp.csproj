@@ -6,11 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>..\bin\</BaseOutputPath>
-    <ApplicationIcon>MessagerApp.ico</ApplicationIcon>
+    <ApplicationIcon>MessengerApp.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="MessagerApp.ico" />
+    <Content Include="MessengerApp.ico" />
   </ItemGroup>
 
   <ItemGroup>

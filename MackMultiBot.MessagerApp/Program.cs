@@ -6,7 +6,7 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading.Tasks;
 
-Console.Title = "Messager";
+Console.Title = "Messenger";
 
 
 using var pushSocket = new PushSocket();

@@ -20,8 +20,6 @@ namespace MackMultiBot
 		public MultiplayerLobby? MultiplayerLobby { get; private set; } = null;
 		public BehaviorEventProcessor? BehaviorEventProcessor { get; private set; }
 
-		Messager? _messager;
-
 		public LobbyConfiguration LobbyConfiguration { get; private set; }
 
 		public ITimerHandler? TimerHandler { get; private set; }
@@ -204,9 +202,7 @@ namespace MackMultiBot
 			await TimerHandler.Start();
 			await BehaviorEventProcessor.OnInitializeEvent();
 
-			_messager = new(BanchoConnection.MessageHandler, ChannelId);
-			BanchoConnection.MessageHandler.ChannelId = ChannelId;
-			_messager.Start();
+			BanchoConnection.MessageHandler.SetNewChannelId(ChannelId);
 
 			Logger.Log(LogLevel.Trace, "Lobby: Lobby instance built successfully");
 		}

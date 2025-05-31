@@ -15,7 +15,9 @@ namespace MackMultiBot.Bancho.Interfaces
 		public event Action<IPrivateIrcMessage>? OnMessageReceived;
         public event Action<IPrivateIrcMessage>? OnMessageSent;
 
-        public void Start();
+		public void SetNewChannelId(string newChannelId);
+
+		public void Start();
 
         public void Stop();
 

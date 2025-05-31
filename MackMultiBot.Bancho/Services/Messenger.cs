@@ -10,27 +10,29 @@ using System.Threading;
 
 namespace MackMultiBot.Bancho
 {
-	public class Messager(IMessageHandler messageHandler, string channelId)
+	public class Messenger(IMessageHandler messageHandler, string channelId)
 	{
+		public string ChannelId = channelId;
+
 		public void Start()
 		{
-			Task.Run(StartMessageServer);
+			Logger.Log(LogLevel.Trace, "Messenger: Starting Messenger");
+			Task.Run(StartMessageSocket);
 		}
 
-		async Task StartMessageServer()
+		Task StartMessageSocket()
 		{
 			using var pullSocket = new PullSocket();
 
 			pullSocket.Bind("tcp://*:5555");
-			Logger.Log(LogLevel.Info, "Messager: Listening on port 5555");
+			Logger.Log(LogLevel.Info, "Messenger: Listening on port 5555");
 
 			while (true)
 			{
 				string msg = pullSocket.ReceiveFrameString();
 
-				messageHandler.SendMessage(channelId, msg);
+				messageHandler.SendMessage(ChannelId, msg);
 			}
 		}
-
 	}
 }

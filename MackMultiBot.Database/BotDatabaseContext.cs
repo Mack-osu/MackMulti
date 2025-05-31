@@ -18,6 +18,9 @@ namespace MackMultiBot.Database
 				throw new InvalidOperationException("No connection string set");
 
 			optionsBuilder.UseSqlite(ConnectionString);
+
+			//optionsBuilder.UseSqlite("Data Source=E:/temp/MackMulti/Builds/DevBuild/data.db");
+
 		}
 	}
 }

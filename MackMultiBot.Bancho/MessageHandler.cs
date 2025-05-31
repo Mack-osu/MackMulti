@@ -15,12 +15,14 @@ namespace MackMultiBot.Bancho
         public event Action<IPrivateIrcMessage>? OnMessageReceived;
 		public event Action<IPrivateIrcMessage>? OnMessageSent;
 
-        private BlockingCollection<Message> _messageQueue = new(50);
+        BlockingCollection<Message> _messageQueue = new(50);
 
-        private CancellationTokenSource? _cancellationTokenSource;
-        private CancellationToken _cancellationToken => _cancellationTokenSource!.Token;
+        CancellationTokenSource? _cancellationTokenSource;
+        CancellationToken _cancellationToken => _cancellationTokenSource!.Token;
 
-        private Task? _messagePumpTask;
+        Task? _messagePumpTask;
+
+        Messenger? _messenger;
 
         public void SendMessage(string channel, string message)
 		{
@@ -30,6 +32,14 @@ namespace MackMultiBot.Bancho
 				Content = message
 			});
 		}
+
+        public void SetNewChannelId(string newChannelId)
+        {
+            ChannelId = newChannelId;
+
+            if (_messenger != null)
+                _messenger.ChannelId = ChannelId;
+        }
 
 		public void Start()
 		{
@@ -47,6 +57,9 @@ namespace MackMultiBot.Bancho
 
             _cancellationTokenSource = new();
             _messagePumpTask = Task.Run(MessagePump);
+
+            _messenger = new(this, ChannelId);
+            _messenger.Start();
 		}
 
 		public void Stop()
@@ -66,6 +79,8 @@ namespace MackMultiBot.Bancho
 
             _messagePumpTask?.Wait();
             _messagePumpTask = null;
+            
+            _messenger = null;
         }
 
         async Task MessagePump()

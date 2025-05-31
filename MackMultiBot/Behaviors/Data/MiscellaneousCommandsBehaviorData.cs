@@ -20,7 +20,11 @@ namespace MackMultiBot.Behaviors.Data
 		{
 			public string PlayerName { get; init; } = string.Empty;
 
+			// Last time playtime record was updated
 			public DateTime TrackingStartTime { get; init; }
+
+			// Time of the player joining the lobby
+			public DateTime InitialJoinTime { get; init; }
 		}
 	}
 }

@@ -57,8 +57,8 @@ namespace MackMultiBot.Behaviors
 
 			if (record != null)
 			{
-				currentPlaytime = DateTime.UtcNow - record.TrackingStartTime;
-				totalPlaytime += currentPlaytime;
+				currentPlaytime = DateTime.UtcNow - record.InitialJoinTime;
+				totalPlaytime += DateTime.UtcNow - record.TrackingStartTime;
 			}
 
 			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
@@ -342,7 +342,8 @@ namespace MackMultiBot.Behaviors
 			Data.PlayerTimeRecords.Add(new MiscellaneousCommandsBehaviorData.PlayerTimeRecord
 			{
 				PlayerName = player.Name,
-				TrackingStartTime = DateTime.UtcNow
+				TrackingStartTime = DateTime.UtcNow,
+				InitialJoinTime = DateTime.UtcNow
 			});
 		}
 
@@ -408,18 +409,22 @@ namespace MackMultiBot.Behaviors
 			}
 
 			await userDb.SaveAsync();
+
+			List<MiscellaneousCommandsBehaviorData.PlayerTimeRecord> previousTimeRecords = Data.PlayerTimeRecords.ToList();
 			Data.PlayerTimeRecords.Clear();
 
 			// Recreates join records for all players currently in lobby.
 			foreach (var player in context.MultiplayerLobby.Players)
 			{
+				MiscellaneousCommandsBehaviorData.PlayerTimeRecord? previousTimeRecord = previousTimeRecords.FirstOrDefault(x => x.PlayerName == player.Name);
+
 				Data.PlayerTimeRecords.Add(new MiscellaneousCommandsBehaviorData.PlayerTimeRecord
 				{
 					PlayerName = player.Name,
-					TrackingStartTime = DateTime.UtcNow
+					TrackingStartTime = DateTime.UtcNow,
+					InitialJoinTime = previousTimeRecord != null ? previousTimeRecord.InitialJoinTime : DateTime.UtcNow
 				});
 			}
-
 		}
 
 		#endregion
