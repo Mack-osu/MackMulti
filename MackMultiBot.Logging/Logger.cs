@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 
 namespace MackMultiBot.Logging
 {
@@ -21,6 +22,25 @@ namespace MackMultiBot.Logging
 				Console.Write($" [{level}] ");
 
 				ConfigureColorsForMessage(level);
+				Console.WriteLine(message);
+			}
+
+			_ = LogToFileAsync(level, message);
+		}
+
+		public static void Log(LogLevel level, string message, ConsoleColor messageColor)
+		{
+			string consoleTimestamp = $"{DateTime.Now:HH:mm}";
+
+			lock (_consoleLock)
+			{
+				ConfigureColorsForTimestamp();
+				Console.Write($"[{consoleTimestamp}]");
+
+				ConfigureColorsForLogLevel(level);
+				Console.Write($" [{level}] ");
+
+				Console.ForegroundColor = messageColor; 
 				Console.WriteLine(message);
 			}
 
@@ -50,6 +70,10 @@ namespace MackMultiBot.Logging
 
 			switch (level)
 			{
+				case LogLevel.MackMulti:
+					Console.ForegroundColor = ConsoleColor.DarkGray;
+					break;
+
 				case LogLevel.Chat:
 					Console.ForegroundColor = ConsoleColor.Cyan;
 					break;
@@ -90,6 +114,10 @@ namespace MackMultiBot.Logging
 
 			switch (level)
 			{
+				case LogLevel.MackMulti:
+					Console.ForegroundColor = ConsoleColor.White;
+					break;
+
 				case LogLevel.Chat:
 					Console.ForegroundColor = ConsoleColor.White;
 					break;
@@ -127,6 +155,7 @@ namespace MackMultiBot.Logging
 
 	public enum LogLevel
 	{
+		MackMulti,
 		Chat,
 		Bancho,
 
