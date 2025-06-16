@@ -68,6 +68,16 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"[https://beatconnect.io/b/{mapsetId} BeatConnect] | [https://osu.direct/d/{mapsetId} osu.direct] | [https://catboy.best/d/{mapsetId} catboy.best]");
 		}
 
+		[BotEvent(BotEventType.Command, "overriderules")]
+		public void OnOverrideRulesCommand(CommandContext commandContext)
+		{
+			if (!commandContext.User.IsAdmin)
+				return;
+
+			Data.RuleOverrideActive = true;
+			Logger.Log(LogLevel.Info, $"MapManagerBehavior: Rules overridden by lobby administrator {commandContext.Player?.Name}");
+		}
+
 		#endregion
 
 		#region Bot Events
@@ -141,10 +151,19 @@ namespace MackMultiBot.Behaviors
 			}
 		}
 
+		[BotEvent(BotEventType.HostChanged)]
+		public void OnHostChanged() => Data.RuleOverrideActive = false;
+
 		[BotEvent(BotEventType.MatchStarted)]
 		public async void OnMatchStarted()
 		{
 			Data.LastMatchStartTime = DateTime.UtcNow;
+
+			if (Data.RuleOverrideActive)
+			{
+				Data.RuleOverrideActive = false;
+				return;
+			}
 
 			context.SendMessage("!mp settings");
 
@@ -226,6 +245,33 @@ namespace MackMultiBot.Behaviors
 		{
 			var beatmapSet = (beatmapInfo as Beatmap).Set;
 
+			// Rule override
+			if (Data.RuleOverrideActive)
+			{
+				Logger.Log(LogLevel.Info, "MapManagerBehavior: Rule override active, skipping beatmap rule enforcement."); 
+				
+				Data.BeatmapInfo = new BeatmapInformation
+				{
+					Id = beatmapInfo.Id,
+					SetId = beatmapInfo.SetId,
+					Name = beatmapSet?.Title ?? string.Empty,
+					Artist = beatmapSet?.Artist ?? string.Empty,
+					Length = beatmapInfo.TotalLength,
+					DrainLength = beatmapInfo.HitLength,
+					StarRating = difficultyAttributes.DifficultyRating
+				};
+
+				Data.LastValidBeatmapId = Data.BeatmapInfo.Id;
+
+				await context.Lobby.BehaviorEventProcessor!.OnBehaviorEvent("NewMap");
+
+				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
+
+				SendBeatmapInfo(beatmapInfo, difficultyAttributes);
+				return;
+			}
+
+			// Standard enforcement
 			Logger.Log(LogLevel.Trace, $"MapManagerBehavior: Enforcing beatmap regulations for map {beatmapInfo.Id}, status: {validationResult}");
 
 			if (validationResult == MapValidationResult.Valid)

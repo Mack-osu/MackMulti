@@ -18,5 +18,7 @@ namespace MackMultiBot.Behaviors.Data
 		public DateTime LastMatchStartTime { get; set; } = DateTime.UtcNow;
 
 		public List<string> PlayersToPing { get; set; } = [];
+
+		public bool RuleOverrideActive { get; set; }
 	}
 }
