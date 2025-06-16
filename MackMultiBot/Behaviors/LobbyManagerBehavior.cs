@@ -67,6 +67,19 @@ namespace MackMultiBot.Behaviors
 			commandContext.Reply($"All available commands can be found on [https://osu.ppy.sh/users/11584934 my profile]");
 		}
 
+		[BotEvent(BotEventType.Command, "kick")]
+		public void OnKickCommand(CommandContext commandContext)
+		{
+			if (!commandContext.User.IsAdmin)
+				return;
+
+			if (!string.IsNullOrEmpty(commandContext.Args[0]))
+			{
+				Logger.Log(LogLevel.Info, $"LobbyManagerBehavior: Lobby Administrator {commandContext.Player?.Name} attempting to kick player {commandContext.Args[0]}");
+				commandContext.Reply($"!mp kick {commandContext.Args[0].ToIrcNameFormat()}");
+			}
+		}
+
 		#endregion
 
 		#region Bancho Events

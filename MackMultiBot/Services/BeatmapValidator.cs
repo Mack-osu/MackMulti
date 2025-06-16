@@ -28,8 +28,6 @@ namespace MackMultiBot
 			if (!IsValidMapLength(beatmapInfo))
 				return MapValidationResult.InvalidMapLength;
 
-			// Map bans?
-
 			return MapValidationResult.Valid;
 		}
 
