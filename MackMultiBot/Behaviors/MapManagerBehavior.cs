@@ -142,9 +142,46 @@ namespace MackMultiBot.Behaviors
 		}
 
 		[BotEvent(BotEventType.MatchStarted)]
-		public void OnMatchStarted()
+		public async void OnMatchStarted()
 		{
 			Data.LastMatchStartTime = DateTime.UtcNow;
+
+			context.SendMessage("!mp settings");
+
+			await Task.Delay(5000);
+
+			// Map validation
+			var beatmapInfo = await context.UsingApiClient(async (apiClient) => await apiClient.GetBeatmapAsync(Data.LastBotAppliedBeatmapId));
+			var difficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(Data.LastBotAppliedBeatmapId));
+
+			if ((context.MultiplayerLobby.Mods & Mods.DoubleTime) != 0)
+			{
+				Logger.Log(LogLevel.Trace, "MapManagerBehavior: DT ENABLED");
+				difficultyAttributes = await context.UsingApiClient(async (apiClient) => await apiClient.GetDifficultyAttributesAsync(Data.LastBotAppliedBeatmapId, ["DT"]));
+			}
+
+			if (beatmapInfo == null)
+			{
+				Logger.Log(LogLevel.Warn, "MapManagerBehavior: Could not fetch beatmap information during map validation.");
+				return;
+			}
+
+			if (difficultyAttributes == null)
+			{
+				Logger.Log(LogLevel.Warn, "MapManagerBehavior: Could not fetch difficulty attributes during map validation.");
+				return;
+			}
+
+			using var dbContext = new BotDatabaseContext();
+			var lobbyRuleConfig = context.Lobby.LobbyConfiguration.RuleConfig;
+			var beatmapValidator = new BeatmapValidator(context.Lobby, lobbyRuleConfig!);
+			var validationResult = await beatmapValidator.ValidateBeatmap(beatmapInfo, difficultyAttributes, (context.MultiplayerLobby.Mods & Mods.Freemod) != 0);
+
+			if (validationResult == MapValidationResult.Valid)
+				return;
+
+			context.SendMessage("!mp abort");
+			context.SendMessage("An attempt to play an invalid beatmap was detected, aborting match.");
 		}
 
 		[BotEvent(BotEventType.MatchFinished)]

@@ -25,7 +25,6 @@ namespace MackMultiBot
 			if (!IsValidDifficulty(beatmapInfo, difficultyAttributes, useDifficultyAttributes))
 				return MapValidationResult.InvalidDifficulty;
 
-
 			if (!IsValidMapLength(beatmapInfo))
 				return MapValidationResult.InvalidMapLength;
 

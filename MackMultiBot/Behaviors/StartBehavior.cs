@@ -1,5 +1,6 @@
 ﻿using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
+using MackMultiBot.Services;
 using ITimer = MackMultiBot.Interfaces.ITimer;
 
 namespace MackMultiBot.Behaviors
@@ -91,13 +92,25 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "abort")]
 		public void OnAbortCommandExecuted(CommandContext commandContext)
 		{
-			// Make sure the player is the host or an admin
-			if (!commandContext.User.IsAdmin)
-				if (commandContext.Player != commandContext.Lobby?.MultiplayerLobby?.Host)
-					return;
+			if (commandContext.Player == null || _context.Lobby.VoteHandler == null)
+				return;
 
-			commandContext.Reply("!mp abort");
+			// Abort if user is admin
+			if (commandContext.User.IsAdmin)
+			{
+				commandContext.Reply("!mp abort");
+				return;
+			}
+
+			if (_context.Lobby.VoteHandler.FindOrCreateVote("abort", "Abort the match").AddPlayerVote(commandContext.Player))
+				commandContext.Reply("!mp abort");
 		}
+
+		[BotEvent(BotEventType.MatchAborted)]
+		public void OnMatchAborted() => _context.Lobby.VoteHandler?.FindOrCreateVote("abort", "Abort the match").Abort();
+
+		[BotEvent(BotEventType.MatchAborted)]
+		public void OnMatchFinished() => _context.Lobby.VoteHandler?.FindOrCreateVote("abort", "Abort the match").Abort();
 
 		[BotEvent(BotEventType.AllPlayersReady)]
 		public void OnAllPlayersReady()
