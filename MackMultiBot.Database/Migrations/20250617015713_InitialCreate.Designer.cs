@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MackMultiBot.Database.Migrations
 {
     [DbContext(typeof(BotDatabaseContext))]
-    [Migration("20250320143156_InitialCreate")]
+    [Migration("20250617015713_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,10 +34,6 @@ namespace MackMultiBot.Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("LobbyIdentifier")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.ToTable("LobbyBehaviorData");
@@ -50,10 +46,6 @@ namespace MackMultiBot.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Identifier")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -159,6 +151,9 @@ namespace MackMultiBot.Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Playtime")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

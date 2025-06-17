@@ -17,7 +17,6 @@ namespace MackMultiBot.Database.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    LobbyIdentifier = table.Column<string>(type: "TEXT", nullable: false),
                     BehaviorName = table.Column<string>(type: "TEXT", nullable: false),
                     Data = table.Column<string>(type: "TEXT", nullable: false)
                 },
@@ -32,7 +31,6 @@ namespace MackMultiBot.Database.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Identifier = table.Column<string>(type: "TEXT", nullable: false),
                     Channel = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -61,6 +59,7 @@ namespace MackMultiBot.Database.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     IsAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
                     AutoSkip = table.Column<bool>(type: "INTEGER", nullable: false),
                     Playtime = table.Column<int>(type: "INTEGER", nullable: false),
