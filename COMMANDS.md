@@ -1,6 +1,12 @@
 # Available Commands
 This is a list of all commands available as of v1.0
 
+--- 
+
+### When using a player's name in a command  
+Use correct capitalization and replace blank spaces with underscores.  
+Example: [ Mack ] becomes [\_Mack\_]
+
 ---
 
 # Player Commands
