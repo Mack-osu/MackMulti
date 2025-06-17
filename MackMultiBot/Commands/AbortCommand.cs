@@ -11,7 +11,7 @@ namespace MackMultiBot.Commands
 	{
 		public string Command => "abort";
 
-		public string[]? Aliases => [];
+		public string[]? Aliases => ["a"];
 
 		public int MinimumArguments => 0;
 

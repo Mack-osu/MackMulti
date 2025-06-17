@@ -13,13 +13,13 @@ namespace MackMultiBot.Commands
 
 		public string[]? Aliases => ["addadmin", "setadmin"];
 
-		public int MinimumArguments => 0;
+		public int MinimumArguments => 1;
 
 		public bool IsGlobal => false;
 
 		public bool AdminCommand => false;
 
-		public string Usage => string.Empty;
+		public string Usage => "!admin <username>";
 
 		public Task Execute(CommandContext ctx) => Task.CompletedTask;
 	}

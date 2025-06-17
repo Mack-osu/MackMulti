@@ -19,7 +19,7 @@ namespace MackMultiBot.Commands
 
 		public bool AdminCommand => true;
 
-		public string Usage => string.Empty;
+		public string Usage => "!kick <username>";
 
 		public Task Execute(CommandContext ctx) => Task.CompletedTask;
 	}

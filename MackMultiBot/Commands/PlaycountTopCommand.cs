@@ -11,7 +11,7 @@ namespace MackMultiBot.Commands
 	{
 		public string Command => "playcounttop";
 
-		public string[]? Aliases => ["pctop", "toppc", "playcounttop", "topplaycount"];
+		public string[]? Aliases => ["pctop", "toppc", "topplaycount"];
 
 		public int MinimumArguments => 0;
 
