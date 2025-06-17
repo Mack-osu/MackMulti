@@ -10,7 +10,6 @@ namespace MackMultiBot
 		List<ITimer> _timers = [];
 
 		bool _isRunning;
-		Task? _timerEventPumpTask;
 
 		public ITimer FindOrCreateTimer(string name)
 		{
@@ -31,7 +30,7 @@ namespace MackMultiBot
 		public Task Start()
 		{
 			_isRunning = true;
-			_timerEventPumpTask = Task.Run(TimerPump);
+			Task.Run(TimerPump);
 			return Task.CompletedTask;
 		}
 

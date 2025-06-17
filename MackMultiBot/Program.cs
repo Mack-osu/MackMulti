@@ -15,7 +15,7 @@ Logger.Log(LogLevel.MackMulti, @"/_/  /_/ \__,_/ \___//_/|_|/_/  /_/ \__,_//_/ \
 Logger.Log(LogLevel.MackMulti, "");
 Logger.Log(LogLevel.MackMulti, "--------------------------------------------------------------------------------", ConsoleColor.White);
 Logger.Log(LogLevel.MackMulti, "Bot Version: v1.0", ConsoleColor.DarkCyan);
-Logger.Log(LogLevel.MackMulti, "Release: Beta", ConsoleColor.DarkCyan);
+Logger.Log(LogLevel.MackMulti, "Report any issues you encounter to me through discord @mackosu", ConsoleColor.DarkCyan);
 Logger.Log(LogLevel.MackMulti, "--------------------------------------------------------------------------------", ConsoleColor.White);
 
 string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../config.txt");

@@ -64,7 +64,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "help")]
 		public void OnHelpCommand(CommandContext commandContext)
 		{
-			commandContext.Reply($"All available commands can be found on [https://osu.ppy.sh/users/11584934 my profile]");
+			commandContext.Reply($"All available commands can be found [https://github.com/Mack-osu/MackMulti/blob/main/COMMANDS.md here]");
 		}
 
 		[BotEvent(BotEventType.Command, "kick")]
@@ -91,9 +91,11 @@ namespace MackMultiBot.Behaviors
 			{
 				OnMatchFinished(); // Ensures room config
 				Data.IsFreshInstance = false;
+				context.Lobby.TimerHandler?.FindOrCreateTimer("NoticeTimer").Start(TimeSpan.FromMinutes(7.5));
 				return;
 			}
 
+			context.Lobby.TimerHandler?.FindOrCreateTimer("NoticeTimer").Start(TimeSpan.FromMinutes(7.5));
 			context.SendMessage("!mp settings");
 		}
 
@@ -215,6 +217,18 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"!mp name {context.Lobby.LobbyConfiguration.Name}");
 
 			OnMatchFinished();
+		}
+
+		[BotEvent(BotEventType.TimerFinished, "NoticeTimer")]
+		public void OnNoticeTimerElapsed()
+		{
+			Random rng = new();
+
+			int randomNoticeIndex = rng.Next(0, Data.NoticeStrings.Length);
+
+			context.SendMessage($"Notice: {Data.NoticeStrings[randomNoticeIndex]}");
+
+			context.Lobby.TimerHandler?.FindOrCreateTimer("NoticeTimer").Start(TimeSpan.FromMinutes(7.5));
 		}
 	}
 }

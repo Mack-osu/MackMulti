@@ -13,7 +13,7 @@ using var pushSocket = new PushSocket();
 
 Console.WriteLine("Connecting...!");
 pushSocket.Connect("tcp://localhost:5555");
-Console.WriteLine("Connected!");
+Console.WriteLine("Connected, your messages will now be relayed to the chat!");
 
 while (true)
 {
