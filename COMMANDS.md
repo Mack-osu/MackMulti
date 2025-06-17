@@ -1,17 +1,7 @@
 # Available Commands
 This is a list of all commands available as of v1.0
----
----
----
----
----
----
----
----
----
----
 
-
+---
 
 # Player Commands
 
@@ -127,45 +117,7 @@ Displays the remaining time of a beatmap currently being played. Optional ping t
 Displays a running total of all accumulated playtime in the lobby.
 
 ---
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
+
 
 # Admin Commands
 
