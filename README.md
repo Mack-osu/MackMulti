@@ -1,7 +1,7 @@
 ![alt text](https://github.com/Mack-osu/MackMulti/blob/main/MackMultiBot/MackMulti.ico?raw=true) 
 
 # MackMulti
-osu! Multiplayer bot written in C#, heavily inspired by matte-ek's [BanchoMultiPlayerBot](https://github.com/matte-ek/BanchoMultiplayerBot)
+osu! Multiplayer bot written in C#, heavily inspired by matte-ek's [BanchoMultiplayerBot](https://github.com/matte-ek/BanchoMultiplayerBot)
 
 ---
 
