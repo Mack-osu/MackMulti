@@ -1,6 +1,6 @@
 # Available Commands
 
-## Player Commands
+# Player Commands
 
 ## `!abort`
 **Aliases:** `!a`  
@@ -138,7 +138,7 @@ Displays a running total of all accumulated playtime in the lobby.
 ---
 
 
-## Admin Commands
+# Admin Commands
 
 ## `!closelobby`
 **Aliases:** `!c`, `!close`  
