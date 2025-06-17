@@ -1,17 +1,13 @@
 # Available Commands
 This is a list of all commands available as of v1.0
----
----
----
----
----
----
----
----
----
----
 
+--- 
 
+### When using a player's name in a command  
+Use correct capitalization and replace blank spaces with underscores.  
+Example: [ Mack ] becomes [\_Mack\_]
+
+---
 
 # Player Commands
 
@@ -127,45 +123,7 @@ Displays the remaining time of a beatmap currently being played. Optional ping t
 Displays a running total of all accumulated playtime in the lobby.
 
 ---
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
----
+
 
 # Admin Commands
 
