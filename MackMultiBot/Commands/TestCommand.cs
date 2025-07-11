@@ -17,7 +17,7 @@ namespace MackMultiBot.Commands
 
 		public bool IsGlobal => false;
 
-		public bool AdminCommand => false;
+		public bool AdminCommand => true;
 
 		public string Usage => string.Empty;
 
