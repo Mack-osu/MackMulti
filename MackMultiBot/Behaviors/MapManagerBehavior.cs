@@ -71,10 +71,8 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "overriderules")]
 		public void OnOverrideRulesCommand(CommandContext commandContext)
 		{
-			if (!commandContext.User.IsAdmin)
-				return;
-
 			Data.RuleOverrideActive = true;
+			commandContext.Reply("Lobby rules overridden, any submitted beatmap can now be picked until the next host is set.");
 			Logger.Log(LogLevel.Info, $"MapManagerBehavior: Rules overridden by lobby administrator {commandContext.Player?.Name}");
 		}
 
