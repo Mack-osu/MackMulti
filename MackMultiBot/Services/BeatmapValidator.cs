@@ -48,7 +48,8 @@ namespace MackMultiBot
 			if (lobbyRuleConfiguration == null || !lobbyRuleConfiguration.LimitDifficulty)
 				return true;
 
-			var SR = !useDifficultyAttributes ? beatmapInfo?.DifficultyRating : difficultyAttributes.DifficultyRating;
+			var SR = !useDifficultyAttributes ? beatmapInfo.DifficultyRating : difficultyAttributes.DifficultyRating;
+			SR = MathF.Round(SR, 2);
 
 			return (SR <= lobbyRuleConfiguration.MaximumDifficulty + lobbyRuleConfiguration.DifficultyMargin)
 					&& (SR >= lobbyRuleConfiguration.MinimumDifficulty);
