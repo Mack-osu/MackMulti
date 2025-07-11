@@ -1,8 +1,9 @@
 ﻿using BanchoSharp.Multiplayer;
 using MackMultiBot.Behaviors.Data;
+using MackMultiBot.Database.Databases;
 using MackMultiBot.Interfaces;
 using MackMultiBot.Logging;
-using MackMultiBot.Database.Databases;
+using System.Numerics;
 
 namespace MackMultiBot.Behaviors
 {
@@ -163,6 +164,13 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.PlayerDisconnected)]
 		public Task OnPlayerDisconnected(MultiplayerPlayer player)
 		{
+			if (context.MultiplayerLobby.MatchInProgress)
+			{
+				Logger.Log(LogLevel.Info, $"HostQueueBehavior: Player disconnected {player.Name}, adding to disconnection queue.");
+				Data.PlayersDisconnectedDuringMatch.Add(player.Name);
+				return Task.CompletedTask;
+			}
+
 			Logger.Log(LogLevel.Info, $"HostQueueBehavior: Player disconnected {player.Name}");
 
 			Data.Queue.Remove(player.Name);
@@ -175,10 +183,28 @@ namespace MackMultiBot.Behaviors
 			return Task.CompletedTask;
 		}
 
+		// Updates the queue post match with any disconnections that occured during the match.
+		void UpdateQueuePostMatch()
+		{
+			Logger.Log(LogLevel.Info, $"HostQueueBehavior: Removing disconnected users {string.Join(", ", Data.PlayersDisconnectedDuringMatch)} from queue");
+
+			foreach (string player in Data.PlayersDisconnectedDuringMatch)
+			{
+				Data.Queue.Remove(player);
+
+				if (Data.Queue.Count > 0)
+					EnsureHost();
+				else // Clear host so the lobby doesn't believe the host is already set if a single player rejoins lobby.
+					context.SendMessage("!mp clearhost");
+			}
+		}
+
 		[BotEvent(BotEventType.MatchFinished)]
 		public async Task OnMatchFinished()
 		{
 			Logger.Log(LogLevel.Info, "HostQueueBehavior: Match Finished");
+
+			UpdateQueuePostMatch();
 
 			await SkipHost();
 			context.SendMessage(await GetQueueMessage());
