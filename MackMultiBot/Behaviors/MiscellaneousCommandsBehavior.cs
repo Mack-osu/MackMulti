@@ -61,8 +61,20 @@ namespace MackMultiBot.Behaviors
 				totalPlaytime += DateTime.UtcNow - record.TrackingStartTime;
 			}
 
-			commandContext.Reply($"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
-								$", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)})).");
+			string reply = $"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
+						   $", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)})).";
+
+			if (currentPlaytime.TotalHours >= 10)
+				reply += "What on earth compelled you to stay here for so long?!?!? Go to bed.";
+			else if (currentPlaytime.TotalHours >= 6)
+				reply += "6 hours... Don't you have anything better to do?";
+			else if (currentPlaytime.TotalHours >= 5)
+				reply += "5 hours in one go? that's a bit excessive";
+			else if (currentPlaytime.TotalHours >= 4)
+				reply += "Maybe you should take a break?";
+			
+
+				commandContext.Reply(reply);
 		}
 
 		[BotEvent(BotEventType.Command, "playcount")]
