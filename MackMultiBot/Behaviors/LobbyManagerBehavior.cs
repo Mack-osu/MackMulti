@@ -228,7 +228,7 @@ namespace MackMultiBot.Behaviors
 
 			context.SendMessage($"Notice: {Data.NoticeStrings[randomNoticeIndex]}");
 
-			context.Lobby.TimerHandler?.FindOrCreateTimer("NoticeTimer").Start(TimeSpan.FromMinutes(7.5));
+			context.Lobby.TimerHandler?.FindOrCreateTimer("NoticeTimer").Start(TimeSpan.FromMinutes(10));
 		}
 	}
 }
