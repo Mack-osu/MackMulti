@@ -65,7 +65,7 @@ namespace MackMultiBot.Behaviors
 						   $", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)})).";
 
 			if (currentPlaytime.TotalHours >= 10)
-				reply += "What on earth compelled you to stay here for so long?!?!? Go to bed.";
+				reply += "Why on gods green earth are you still here?!? Go to bed !!";
 			else if (currentPlaytime.TotalHours >= 6)
 				reply += "6 hours... Don't you have anything better to do?";
 			else if (currentPlaytime.TotalHours >= 5)

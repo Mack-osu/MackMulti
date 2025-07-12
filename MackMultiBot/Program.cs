@@ -2,7 +2,7 @@
 using MackMultiBot.Bancho;
 using MackMultiBot.Database;
 using MackMultiBot.Logging;
-using System.Drawing;
+using System.Windows.Forms;
 
 Console.Title = "BotLogger";
 
@@ -32,5 +32,7 @@ Logger.Log(LogLevel.MackMulti, "Starting Bot...", ConsoleColor.White);
 Logger.Log(LogLevel.MackMulti, "--------------------------------------------------------------------------------", ConsoleColor.White);
 Bot Bot = new(config);
 await Bot.StartAsync();
+
+Application.Run(new MessengerForm(Bot));
 
 await Task.Delay(-1);
