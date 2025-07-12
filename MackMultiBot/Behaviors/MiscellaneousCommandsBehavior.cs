@@ -32,6 +32,9 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "playtime")]
 		public async void OnPlaytimeCommand(CommandContext commandContext)
 		{
+			if (commandContext.Player == null)
+				return;
+
 			var userDb = new UserDb();
 
 			// external player
@@ -80,7 +83,7 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.Command, "playcount")]
 		public async Task OnPlaycountCommand(CommandContext commandContext)
 		{
-			if (commandContext.Player?.Name == null)
+			if (commandContext.Player == null)
 				return;
 
 			var userDb = new UserDb();

@@ -35,4 +35,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="MessengerApp.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

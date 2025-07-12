@@ -17,11 +17,12 @@ namespace MackMultiBot
 		{
 			_bot = bot;
 
-			Text = "Lobby Message Input";
+			Text = "Messenger Application";
+			this.Icon = new Icon("MessengerApp.ico");
 			Width = 800;
 			Height = 100;
 			FormBorderStyle = FormBorderStyle.FixedSingle;
-			ShowInTaskbar = false;
+			ShowInTaskbar = true;
 			MaximizeBox = false;
 			BackColor = Color.FromArgb(12, 12, 12);
 
@@ -31,7 +32,8 @@ namespace MackMultiBot
 				Font = new Font("Consolas", 12),
 				BackColor = Color.FromArgb(12, 12, 12),
 				ForeColor = Color.White,
-				BorderStyle = BorderStyle.None
+				BorderStyle = BorderStyle.None,
+				PlaceholderText = "Enter a message to send to the lobby"
 			};
 
 			_inputBox.KeyDown += InputBox_KeyDown;
@@ -45,12 +47,9 @@ namespace MackMultiBot
 			{
 				e.SuppressKeyPress = true;
 				string message = _inputBox.Text.Trim();
-				if (!string.IsNullOrEmpty(message))
+				if (!string.IsNullOrEmpty(message) && !string.IsNullOrEmpty(_bot.BanchoConnection.MessageHandler.ChannelId))
 				{
-					Console.WriteLine($"[SENT] {message}");
-
-					if (!string.IsNullOrEmpty(_bot.BanchoConnection.MessageHandler.ChannelId))
-						_bot.BanchoConnection.MessageHandler.SendMessage(_bot.BanchoConnection.MessageHandler.ChannelId, message);
+					_bot.BanchoConnection.MessageHandler.SendMessage(_bot.BanchoConnection.MessageHandler.ChannelId, message);
 
 					_inputBox.Clear();
 				}
