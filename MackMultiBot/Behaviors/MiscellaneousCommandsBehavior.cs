@@ -99,19 +99,19 @@ namespace MackMultiBot.Behaviors
 
 			// Perhaps an optional parameter to get user at a certain spot?
 
-			var playTimeTop4 = await userDb.GetTopUsersByPlayTime(4);
+			var playTimeTop3 = await userDb.GetTopUsersByPlayTime(3);
 
 			Dictionary<string, int> users = [];
 
-			for (int i = 0; i < playTimeTop4.Count; i++)
+			for (int i = 0; i < playTimeTop3.Count; i++)
 			{
-				var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == playTimeTop4[i].Name);
-				users.Add(playTimeTop4[i].Name, record == null ? playTimeTop4[i].Playtime : playTimeTop4[i].Playtime + (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds);
+				var record = Data.PlayerTimeRecords.FirstOrDefault(x => x.PlayerName == playTimeTop3[i].Name);
+				users.Add(playTimeTop3[i].Name, record == null ? playTimeTop3[i].Playtime : playTimeTop3[i].Playtime + (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds);
 			}
 
-			commandContext.Reply($"#1: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#2: {users.ElementAt(2).Key} with {TimeSpan.FromSeconds(users.ElementAt(2).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#3: {users.ElementAt(3).Key} with {TimeSpan.FromSeconds(users.ElementAt(3).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}.");
+			commandContext.Reply($"#1: {users.ElementAt(0).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#2: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(2).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#3: {users.ElementAt(2).Key} with {TimeSpan.FromSeconds(users.ElementAt(3).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}.");
 		}
 
 		[BotEvent(BotEventType.Command, "playcounttop")]
@@ -123,9 +123,9 @@ namespace MackMultiBot.Behaviors
 
 			var playcountTop3 = await userDb.GetTopUsersByPlayCount(3);
 
-			commandContext.Reply($"#1: {playcountTop3[0].Name} with {playcountTop3[0].Playcount} matches | " +
-								$"#2: {playcountTop3[1].Name} with {playcountTop3[1].Playcount} matches | " +
-								$"#3: {playcountTop3[2].Name} with {playcountTop3[2].Playcount} matches.");
+			commandContext.Reply($"#1: {playcountTop3[0]?.Name} with {playcountTop3[0]?.Playcount} matches | " +
+								$"#2: {playcountTop3[1]?.Name} with {playcountTop3[1]?.Playcount} matches | " +
+								$"#3: {playcountTop3[2]?.Name} with {playcountTop3[2]?.Playcount} matches.");
 		}
 
 		[BotEvent(BotEventType.Command, "matchwinstop")]
