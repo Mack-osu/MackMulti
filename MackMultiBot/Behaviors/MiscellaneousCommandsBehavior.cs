@@ -50,7 +50,7 @@ namespace MackMultiBot.Behaviors
 
 				var playTime = TimeSpan.FromSeconds(user.Playtime);
 
-				commandContext.Reply($"{user.Name} has played for {playTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} (#{await userDb.GetUserPlaytimeSpot(user.Name)}).");
+				commandContext.Reply($"{user.Name} has played for {playTime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} (#{await userDb.GetUserPlaytimeSpot(user.Name) + 1}).");
 				return;
 			}
 
@@ -65,7 +65,7 @@ namespace MackMultiBot.Behaviors
 			}
 
 			string reply = $"{commandContext.Player?.Name} has been here for {currentPlaytime.Humanize(3, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}" +
-						   $", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name)})).";
+						   $", ({totalPlaytime.Humanize(4, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} in total (#{await userDb.GetUserPlaytimeSpot(commandContext.Player!.Name) + 1})).";
 
 			if (currentPlaytime.TotalHours >= 10)
 				reply += "Why on gods green earth are you still here?!? Go to bed !!";
