@@ -18,10 +18,35 @@ No additional dependencies are required, the application is bundled with all nec
 1. [Download the latest release ZIP](https://github.com/Mack-osu/MackMulti/releases)
 2. Extract the ZIP
 3. Fill out `config.txt`
-4. Run `launch.bat`
+4. Run `MackMulti.exe`
+
+---
+
+### To obtain your IRC Credentials, go to your [osu account settings](https//osu.ppy.sh/home/account/edit#legacy-api)
+
+- Click New Legacy IRC Password
+
+![image failed to load](https://i.ibb.co/DftnVXcx/image.png)
+
+- When inputting your IRC Username into the config file, replace any blank spaces with underscores ("[ Mack ]" becomes "[\_Mack_]")
+
+---
+
+### To obtain your API Credentials, go to your [osu account settings](https://osu.ppy.sh/home/account/edit#oauth)
+- Click New OAuth Application
+
+![image failed to load](https://i.ibb.co/chWTT7YX/image.png)
+
+- Give it a name, anything works!
+
+- Application Callback URLs are not required, leave that space empty.
+
+---
 
 ### Supported Platforms
 
 - Windows 10/11
+
+---
 
 If you have any questions, send me a DM on discord @mackosu, I'd be happy to help!
