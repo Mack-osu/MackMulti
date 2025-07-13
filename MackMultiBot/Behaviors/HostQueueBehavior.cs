@@ -164,12 +164,10 @@ namespace MackMultiBot.Behaviors
 		[BotEvent(BotEventType.PlayerDisconnected)]
 		public Task OnPlayerDisconnected(MultiplayerPlayer player)
 		{
+			// We don't want to ensure the host if someone were to disconnect midway through a map as that may lead to someones turn as host being skipped,
+			// instead we validate the queue after skipping the current host once the map is finished.
 			if (context.MultiplayerLobby.MatchInProgress)
-			{
-				Logger.Log(LogLevel.Info, $"HostQueueBehavior: Player disconnected {player.Name}, adding to disconnection queue.");
-				Data.PlayersDisconnectedDuringMatch.Add(player.Name);
 				return Task.CompletedTask;
-			}
 
 			Logger.Log(LogLevel.Info, $"HostQueueBehavior: Player disconnected {player.Name}");
 
@@ -183,33 +181,16 @@ namespace MackMultiBot.Behaviors
 			return Task.CompletedTask;
 		}
 
-		// Updates the queue post match with any disconnections that occured during the match.
-		void UpdateQueuePostMatch()
-		{
-			Logger.Log(LogLevel.Info, $"HostQueueBehavior: Removing disconnected users {string.Join(", ", Data.PlayersDisconnectedDuringMatch)} from queue");
-
-			foreach (string player in Data.PlayersDisconnectedDuringMatch)
-			{
-				Data.Queue.Remove(player);
-
-				if (Data.Queue.Count > 0)
-					EnsureHost();
-				else // Clear host so the lobby doesn't believe the host is already set if a single player rejoins lobby.
-					context.SendMessage("!mp clearhost");
-			}
-		}
-
 		[BotEvent(BotEventType.MatchFinished)]
 		public async Task OnMatchFinished()
 		{
 			Logger.Log(LogLevel.Info, "HostQueueBehavior: Match Finished");
 
-			UpdateQueuePostMatch();
-
 			await SkipHost();
+			await EnsureQueueValidity();
+
 			context.SendMessage(await GetQueueMessage());
 		}
-
 
 		[BotEvent(BotEventType.HostChanged)]
 		public Task OnHostChanged()
@@ -217,6 +198,13 @@ namespace MackMultiBot.Behaviors
 			EnsureHost();
 
 			return Task.CompletedTask;
+		}
+
+		[BotEvent(BotEventType.MatchAborted)]
+		public async Task OnMatchAborted()
+		{
+			// Ensure queue validity in case of a mid map disconnect.
+			await EnsureQueueValidity();
 		}
 
 		#endregion
