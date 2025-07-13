@@ -1,4 +1,4 @@
-![alt text](https://github.com/Mack-osu/MackMulti/blob/main/MackMultiBot/MackMulti.ico?raw=true) 
+![image failed to load](https://github.com/Mack-osu/MackMulti/blob/main/MackMultiBot/MackMulti.ico?raw=true) 
 
 # MackMulti
 osu! Multiplayer bot written in C#, heavily inspired by matte-ek's [BanchoMultiplayerBot](https://github.com/matte-ek/BanchoMultiplayerBot)
@@ -18,22 +18,23 @@ No additional dependencies are required, the application is bundled with all nec
 1. [Download the latest release ZIP](https://github.com/Mack-osu/MackMulti/releases)
 2. Extract the ZIP
 3. Fill out `config.txt`
-4. Run `MackMulti.exe`
+4. Run `Launch.bat`
 
 ---
 
 ### To obtain your IRC Credentials, go to your [osu account settings](https//osu.ppy.sh/home/account/edit#legacy-api)
 
-- Click New Legacy IRC Password
+- Click `New Legacy IRC Password`
 
 ![image failed to load](https://i.ibb.co/DftnVXcx/image.png)
 
-- When inputting your IRC Username into the config file, replace any blank spaces with underscores ("[ Mack ]" becomes "[\_Mack_]")
+- When inputting your IRC Username into the config file, replace any blank spaces with underscores.
+Example: ("[ Mack ]" becomes "[\_Mack_]")
 
 ---
 
 ### To obtain your API Credentials, go to your [osu account settings](https://osu.ppy.sh/home/account/edit#oauth)
-- Click New OAuth Application
+- Click `New OAuth Application`
 
 ![image failed to load](https://i.ibb.co/chWTT7YX/image.png)
 
