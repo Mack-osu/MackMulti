@@ -112,9 +112,9 @@ namespace MackMultiBot.Behaviors
 				users.Add(playTimeTop3[i].Name, record == null ? playTimeTop3[i].Playtime : playTimeTop3[i].Playtime + (int)(DateTime.UtcNow - record.TrackingStartTime).TotalSeconds);
 			}
 
-			commandContext.Reply($"#1: {users.ElementAt(0).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#2: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(2).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
-								$"#3: {users.ElementAt(2).Key} with {TimeSpan.FromSeconds(users.ElementAt(3).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}.");
+			commandContext.Reply($"#1: {users.ElementAt(0).Key} with {TimeSpan.FromSeconds(users.ElementAt(0).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#2: {users.ElementAt(1).Key} with {TimeSpan.FromSeconds(users.ElementAt(1).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)} | " +
+								$"#3: {users.ElementAt(2).Key} with {TimeSpan.FromSeconds(users.ElementAt(2).Value).Humanize(2, maxUnit: TimeUnit.Hour, minUnit: TimeUnit.Second)}.");
 		}
 
 		[BotEvent(BotEventType.Command, "playcounttop")]
