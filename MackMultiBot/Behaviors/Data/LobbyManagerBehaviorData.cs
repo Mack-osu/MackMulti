@@ -22,7 +22,7 @@ namespace MackMultiBot.Behaviors.Data
 			"Admins can override lobby rules with !overriderules.",
 			"Want to suggest a new feature or command? Send a DM to [ Mack ] on osu!",
 			"Joined in the middle of a match? !timeleft shows how long you'll have to wait.",
-			"Did you know you can user !timeleft ping to receive an invite when the next map finishes?",
+			"Did you know you can use !timeleft ping to receive an invite when the next map finishes?",
 			"Most commands have aliases, like !bestmapscore which can be shortened to !bms",
 			"Curious how many hours you've sunk into this lobby? Try !playtime",
 			"See how you stack up against other players with !playtimetop, !winstop or !playcounttop",
