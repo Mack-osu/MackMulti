@@ -22,7 +22,7 @@ No additional dependencies are required, the application is bundled with all nec
 
 ---
 
-### To obtain your IRC Credentials, go to your [osu account settings](https//osu.ppy.sh/home/account/edit#legacy-api)
+### To obtain your IRC Credentials, go to your [osu account settings](https://osu.ppy.sh/home/account/edit#legacy-api)
 
 - Click `New Legacy IRC Password`
 
