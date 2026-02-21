@@ -31,6 +31,8 @@ No additional dependencies are required, the application is bundled with all nec
 - When inputting your IRC Username into the config file, replace any blank spaces with underscores.
 Example: ("[ Mack ]" becomes "[\_Mack_]")
 
+⚠️ **DO NOT SHARE YOUR IRC PASSWORD WITH ANYONE** ⚠️
+
 ---
 
 ### To obtain your API Credentials, go to your [osu account settings](https://osu.ppy.sh/home/account/edit#oauth)
@@ -41,6 +43,8 @@ Example: ("[ Mack ]" becomes "[\_Mack_]")
 - Give it a name, anything works!
 
 - Application Callback URLs are not required, leave that space empty.
+
+⚠️ **DO NOT SHARE YOUR API CREDENTIALS WITH ANYONE** ⚠️
 
 ---
 
