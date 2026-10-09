@@ -14,7 +14,7 @@ Logger.Log(LogLevel.MackMulti, " / /  / // /_/ // /__ / ,<  / /  / // /_/ // // 
 Logger.Log(LogLevel.MackMulti, @"/_/  /_/ \__,_/ \___//_/|_|/_/  /_/ \__,_//_/ \__//_/", ConsoleColor.Green);
 Logger.Log(LogLevel.MackMulti, "");
 Logger.Log(LogLevel.MackMulti, "--------------------------------------------------------------------------------", ConsoleColor.White);
-Logger.Log(LogLevel.MackMulti, "Bot Version: v1.0", ConsoleColor.DarkCyan);
+Logger.Log(LogLevel.MackMulti, "Bot Version: v1.1.1", ConsoleColor.DarkCyan);
 Logger.Log(LogLevel.MackMulti, "Report any issues you encounter to me through discord @mackosu", ConsoleColor.DarkCyan);
 Logger.Log(LogLevel.MackMulti, "--------------------------------------------------------------------------------", ConsoleColor.White);
 

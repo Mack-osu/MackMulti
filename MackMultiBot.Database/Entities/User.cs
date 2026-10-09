@@ -10,6 +10,8 @@ namespace MackMultiBot.Database.Entities
 	public class User
 	{
 		public int Id { get; set; }
+
+		[MaxLength(512)]
 		public required string Name { get; set; }
 		public int UserId { get; set; } = 0;
 		public bool IsAdmin { get; set; }

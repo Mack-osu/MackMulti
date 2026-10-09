@@ -242,9 +242,11 @@ namespace MackMultiBot.Behaviors
 		async Task EnforceLobbyRules(BeatmapExtended beatmapInfo, DifficultyAttributes difficultyAttributes, MapValidationResult validationResult, LobbyRuleConfiguration lobbyRuleConfig, int mods = 0)
 		{
 			var beatmapSet = (beatmapInfo as Beatmap).Set;
+            // Some guy gave me money for this okay. https://osu.ppy.sh/b/4009988
+            bool isTheMagician = beatmapInfo.Id == 4009988;
 
-			// Rule override
-			if (Data.RuleOverrideActive)
+            // Rule override
+            if (Data.RuleOverrideActive || isTheMagician)
 			{
 				Logger.Log(LogLevel.Info, "MapManagerBehavior: Rule override active, skipping beatmap rule enforcement."); 
 				
@@ -266,7 +268,11 @@ namespace MackMultiBot.Behaviors
 				ApplyBeatmap(beatmapInfo.Id); // have the bot set the map so that it is always on the latest version.
 
 				SendBeatmapInfo(beatmapInfo, difficultyAttributes);
-				return;
+
+                if (!Data.RuleOverrideActive && isTheMagician)
+                    context.SendMessage("This map was brought to you by [https://osu.ppy.sh/users/22680854 svtzx]");
+
+                return;
 			}
 
 			// Standard enforcement
