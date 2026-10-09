@@ -1,5 +1,5 @@
 # Available Commands
-This is a list of all commands available as of v1.0
+This is a list of all commands available as of v1.1.1
 
 --- 
 
