@@ -156,8 +156,10 @@ namespace MackMultiBot.Behaviors
 		public async void OnMatchStarted()
 		{
 			Data.LastMatchStartTime = DateTime.UtcNow;
+            // Some guy gave me money for this okay. https://osu.ppy.sh/b/4009988
+            bool isTheMagician = Data.LastBotAppliedBeatmapId == 4009988;
 
-			if (Data.RuleOverrideActive)
+            if (Data.RuleOverrideActive || isTheMagician)
 			{
 				Data.RuleOverrideActive = false;
 				return;
@@ -208,7 +210,7 @@ namespace MackMultiBot.Behaviors
 
 			foreach (var username in Data.PlayersToPing)
 			{
-				context.Lobby.BanchoConnection.MessageHandler.SendMessage($"{username}", $"The match in {lobbyName}] has finished, you will receive an invite shortly.");
+				context.Lobby.BanchoConnection.MessageHandler.SendMessage($"{username}", $"The match in {lobbyName} has finished, you will receive an invite shortly.");
 				context.MultiplayerLobby.InviteAsync(username);
 			}
 
@@ -227,7 +229,7 @@ namespace MackMultiBot.Behaviors
 			context.SendMessage($"[https://osu.ppy.sh/b/{beatmapInfo.Id} {beatmapSet?.Artist} - {beatmapSet?.Title} [{beatmapInfo.Version}]] - [https://catboy.best/d/{beatmapInfo.SetId} Mirror]");
 			context.SendMessage($"Star Rating: {roundedSr} | Length: {beatmapInfo.TotalLength:mm\\:ss} | BPM: {beatmapInfo.BPM} | {beatmapInfo.Status}");
 			context.SendMessage($"AR: {beatmapInfo.ApproachRate} | OD: {beatmapInfo.OverallDifficulty} | CS: {beatmapInfo.CircleSize} | HP: {beatmapInfo.HealthDrain}");
-		}
+        }
 
 		/// <summary>
 		/// Applies the provided beatmap id to the lobby, will also set the last bot applied beatmap id,
